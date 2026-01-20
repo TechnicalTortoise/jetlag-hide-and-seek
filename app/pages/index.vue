@@ -14,10 +14,10 @@ const map = useTemplateRef('map')
       <!-- <MapOverlayButton text="📐" class="pointer-events-auto" /> -->
     </div>
     <div class="absolute inset-0 pointer-events-none z-20">
-      <!-- <Timeline /> -->
-      <UButton class="pointer-events-auto" @click="map?.drawCircle()">
+      <Timeline />
+      <!-- <UButton class="pointer-events-auto" @click="map?.drawCircle()">
         bloob
-      </UButton>
+      </UButton> -->
     </div>
   </div>
 </template>

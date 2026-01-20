@@ -5,11 +5,9 @@ const props = defineProps<{
 </script>
 
 <template>
-  <UButton>
+  <UButton class="w-24">
     {{ props.text }}
   </UButton>
 </template>
 
-<style>
-
-</style>
+<style></style>
