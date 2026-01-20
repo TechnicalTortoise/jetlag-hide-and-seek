@@ -1,33 +1,25 @@
 <script lang="ts" setup>
 import { circle } from '@turf/turf'
 
-// import { useMap } from 'vue-maplibre-gl'
+import { useMapStore } from '~/stores/MapStore'
 
-// const map = useMap()
-const mapRef = useTemplateRef('map')
+const mapComponent = useTemplateRef('map')
+const mapStore = useMapStore()
 
-function drawCircle() {
-  const map = mapRef.value?.map
-  if (map === undefined) {
+watch(mapComponent, (newMapComponent) => {
+  if (newMapComponent === undefined) {
     return
   }
-  const c = circle([-1.405643, 50.928988], 1, { steps: 64, units: 'kilometers' })
-  map.addSource('heebus-radius', { type: 'geojson', data: c })
-  map.addLayer({ id: 'heebus-radius', type:
-  'fill', source: 'heebus-radius', paint: {
-    'fill-color': '#8CCFFF',
-    'fill-opacity': 0.5,
-  } })
+  const mapInstance = newMapComponent?.mapInstance
+  if (mapInstance === undefined) {
+    return
+  }
+  mapStore.setMapInstance(mapInstance)
+})
 
-  map.addLayer({
-    id: 'heebus-radius-outline',
-    type: 'line',
-    source: 'heebus-radius',
-    paint: {
-      'line-color': '#0094ff',
-      'line-width': 3,
-    },
-  })
+function drawCircle() {
+  // const map = mapStore.getMap()
+  mapStore.drawCircle([-1.405643, 50.928988], 1.7, 'kilometers', 'heebis', 'hoobis')
 }
 defineExpose({ drawCircle })
 </script>
@@ -36,6 +28,4 @@ defineExpose({ drawCircle })
   <Map ref="map" />
 </template>
 
-<style>
-
-</style>
+<style></style>

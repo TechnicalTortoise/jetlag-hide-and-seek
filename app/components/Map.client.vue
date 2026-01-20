@@ -10,20 +10,11 @@ const center = [-1.405643, 50.928988] as [number, number]
 const zoom = 12
 
 const mapInstance = useMap()
-
-const map = computed(() => {
-  return mapInstance.map
-})
-
-defineExpose({ map })
+defineExpose({ mapInstance })
 </script>
 
 <template>
-  <MglMap
-    :map-style="style"
-    :center="center"
-    :zoom="zoom" class="w-full h-full"
-  >
+  <MglMap :map-style="style" :center="center" :zoom="zoom" class="w-full h-full">
     <MglNavigationControl />
   </MglMap>
 </template>
