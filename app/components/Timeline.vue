@@ -1,9 +1,66 @@
 <script lang="ts" setup>
+import type { ComponentInstance, ComponentPublicInstance } from 'vue'
+import { useDraggable } from '@vueuse/core'
+import { onMounted, ref, useTemplateRef } from 'vue'
 import { useGameStore } from '~/stores/GameStore'
 
-const show = ref(false)
+const show = ref(true)
 const gameStore = useGameStore()
 const { questions } = storeToRefs(gameStore)
+const draggable = useTemplateRef('draggable')
+const container = ref(null)
+const itemRefs = ref<ComponentPublicInstance[]>([])
+const snapPoints = ref<number[]>([])
+
+function setItemRef(comp: ComponentPublicInstance | null | Element) {
+  if (comp && !itemRefs.value.includes(comp as ComponentPublicInstance)) {
+    itemRefs.value.push(comp as ComponentPublicInstance)
+  }
+}
+
+function calculateSnapPoints() {
+  snapPoints.value = itemRefs.value
+    .map((component) => {
+      // Get the root DOM element from the component
+      const el = component?.$el
+      if (!el)
+        return null
+
+      const rect = el.getBoundingClientRect()
+      return rect.left + rect.width / 2
+    })
+    .filter(x => x !== null)
+  console.warn(snapPoints)
+}
+onMounted(() => {
+  itemRefs.value = []
+  setTimeout(() => {
+    calculateSnapPoints()
+    console.warn(snapPoints.value)
+  }, 0)
+})
+
+const { x, y, style } = useDraggable(draggable, {
+  axis: 'x',
+  initialValue: {
+    x: 0,
+    y: 0,
+  },
+  containerElement: container,
+  onMove: (position) => {
+    let bestX: number = 0
+    let bestDistance: number = Infinity
+    snapPoints.value.forEach((snapX) => {
+      const d: number = Math.abs(position.x - snapX)
+      if (d < bestDistance) {
+        bestDistance = d
+        bestX = snapX
+      }
+      // todo can break early
+    })
+    position.x = bestX
+  },
+})
 </script>
 
 <template>
@@ -13,9 +70,8 @@ const { questions } = storeToRefs(gameStore)
 
   <Transition name="slide">
     <div v-if="show" class="absolute w-screen h-32 bg-accented bottom-0 pointer-events-auto">
-      <!-- <div class="grid grid-cols-6 grid-rows-1 gap-4"> -->
-      <TimelineItem v-for="(question, index) in questions" :key="index" :text="question.timelineText" />
-      <!-- </div> -->
+      <TimelineItem v-for="question in questions" :key="question.id" :ref="setItemRef" :text="question.timelineText" />
+      <div ref="draggable" class="w-1 h-24 bg-red-400 float-left" :style="style" style="position:absolute" />
     </div>
   </Transition>
 </template>
