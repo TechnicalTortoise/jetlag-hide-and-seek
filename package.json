@@ -23,7 +23,8 @@
     "mitt": "^3.0.1",
     "nuxt": "^4.2.2",
     "pinia": "^3.0.4",
-    "vue-maplibre-gl": "^5.5.9"
+    "vue-maplibre-gl": "^5.5.9",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.1",

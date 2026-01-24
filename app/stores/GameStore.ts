@@ -1,9 +1,9 @@
 import type { Units } from '@turf/turf'
 
 // type guards
-interface Question {
-  type: 'Radar'
-  question: Radar
+export interface Question {
+  type: 'Radar' | 'TimelineMarker'
+  question: Radar | undefined
   timelineText: string
   id: number
 }
@@ -27,9 +27,27 @@ export const useGameStore = defineStore('game', () => {
       question: radar,
       type: 'Radar',
       timelineText: `${radius.toString()} ${units}`,
-      id: questions.value.length,
+      id: questions.value.length - 1,
     })
   }
+
+  const timelineMarkerIndex: Ref<number> = ref(0)
+
+  questions.value.push({
+    question: undefined,
+    type: 'TimelineMarker',
+    timelineText: '',
+    id: -1,
+  })
+
+  watch(questions, (newQuestions) => {
+    timelineMarkerIndex.value = newQuestions.findIndex((question) => {
+      return question.type === 'TimelineMarker'
+    })
+    console.warn(timelineMarkerIndex.value)
+  })
+
+  addRadar(1, 'kilometers', [-1.407516809729255, 50.94303107100244])
   addRadar(2, 'kilometers', [-1.405643, 50.928988])
   addRadar(3, 'kilometers', [-1.405643, 50.928988])
   addRadar(4, 'kilometers', [-1.405643, 50.928988])
@@ -43,7 +61,6 @@ export const useGameStore = defineStore('game', () => {
   addRadar(12, 'kilometers', [-1.405643, 50.928988])
   addRadar(13, 'kilometers', [-1.405643, 50.928988])
   addRadar(14, 'kilometers', [-1.4065168097292855, 50.94303107100244])
-  addRadar(0.2, 'kilometers', [-1.407516809729255, 50.94303107100244])
 
-  return { questions, addRadar }
+  return { questions, addRadar, timelineMarkerIndex }
 })
