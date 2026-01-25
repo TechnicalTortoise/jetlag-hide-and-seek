@@ -7,6 +7,7 @@ import { defineStore } from 'pinia'
 
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
+  const mapLoaded = ref<boolean>(false)
 
   function getMap() {
     if (mapInstance.value === undefined) {
@@ -50,5 +51,5 @@ export const useMapStore = defineStore('map', () => {
     // })
   }
 
-  return { map: mapInstance, getMap, setMapInstance, drawCircle }
+  return { mapInstance, mapLoaded, getMap, setMapInstance, drawCircle }
 })

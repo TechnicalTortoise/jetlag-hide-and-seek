@@ -17,11 +17,11 @@ watch(mapComponent, (newMapComponent) => {
   mapStore.setMapInstance(mapInstance)
 })
 
-function drawCircle() {
-  // const map = mapStore.getMap()
-  mapStore.drawCircle([-1.405643, 50.928988], 1.7, 'kilometers', 'heebis', 'hoobis')
-}
-defineExpose({ drawCircle })
+// function drawCircle() {
+//   // const map = mapStore.getMap()
+//   mapStore.drawCircle([-1.405643, 50.928988], 1.7, 'kilometers', 'heebis', 'hoobis')
+// }
+// defineExpose({ drawCircle })
 </script>
 
 <template>
