@@ -1,8 +1,6 @@
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties } from 'geojson'
-import { timeline } from '#build/ui'
-import { id, tr } from '@nuxt/ui/runtime/locale/index.js'
-import { circle, difference, featureCollection, intersect, union } from '@turf/turf'
+import { circle } from '@turf/turf'
 import { useMapStore } from '~/stores/MapStore'
 
 // type guards
@@ -43,7 +41,7 @@ export const useGameStore = defineStore('game', () => {
     const id = questions.value.length - 1
     const name = `${radius.toString() + units.toString()} Radar (${id.toString()})`
 
-    questions.value.push({
+    const q: Question = {
       question: radar,
       type: 'Radar',
       timelineText: `${radius.toString()} ${units}`,
@@ -51,7 +49,8 @@ export const useGameStore = defineStore('game', () => {
       mapLayerId: name,
       fullPolygon: entirePolygon,
       exclusivePolygon: undefined,
-    })
+    }
+    questions.value.push(q)
   }
 
   const gameArea = {
@@ -72,48 +71,36 @@ export const useGameStore = defineStore('game', () => {
   })
 
   const drawGameArea = () => {
-    const fullWorld: GeoJsonProperties = {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          // Outer ring - covers the world
-          [
-            [-180, -90],
-            [180, -90],
-            [180, 90],
-            [-180, 90],
-            [-180, -90],
-          ],
-        ],
-      },
-    }
-    let currentRemainingArea: GeoJsonProperties = fullWorld
-    questions.value.forEach((q: Question) => {
-      if (q.type === 'Radar') {
-        const r = q.question
-        if (r !== undefined) {
-          // const name = `${r.radius.toString() + r.units.toString()} Radar (${q.id.toString()})`
-          // mapStore.drawCircle(r.lnglat, r.radius, r.units, name, name, r.hit)
-          if (q.fullPolygon !== undefined) {
-            if (r.hit) {
-              q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
-            }
-            else {
-              q.exclusivePolygon = difference(featureCollection([currentRemainingArea, mapStore.invertGeometry(q.fullPolygon)]))
-            }
-            currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
-
-            mapStore.drawPolygon(q.exclusivePolygon, q.mapLayerId)
-          }
-        }
+    let pastTimelineMarker: boolean = false
+    for (let i = 0; i < questions.value.length; i += 1) {
+      const q: Question | undefined = questions.value[i]
+      if (q === undefined) {
+        console.warn('Question undefined')
+        continue
       }
-    })
+      if (q.type === 'TimelineMarker') {
+        pastTimelineMarker = true
+        continue
+      }
+      if (pastTimelineMarker) {
+        mapStore.hideQuestion(q)
+      }
+      else {
+        mapStore.drawQuestion(q)
+      }
+    }
   }
 
   watch(mapLoaded, () => {
     console.warn('map loaded watcher says ', mapLoaded.value)
     if (mapLoaded.value) {
+      addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
+      addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
+      addRadar(1, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
+      addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
+
+      mapStore.calculatePolygons(questions.value)
+      console.warn('Calculated polygons')
       drawGameArea()
     }
   })
@@ -123,20 +110,14 @@ export const useGameStore = defineStore('game', () => {
     if (mapInstance.value === undefined) {
       console.warn('Map instance undefined')
     }
-    // drawGameArea()
   })
 
   watch(questions, (newQuestions) => {
     timelineMarkerIndex.value = newQuestions.findIndex((question) => {
       return question.type === 'TimelineMarker'
     })
+    drawGameArea()
   })
-
-  addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
-
-  addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
-
-  addRadar(1, 'kilometers', [-1.3583492927662713, 50.94474366229376], true)
 
   // addRadar(2, 'kilometers', [-1.405643, 50.928988])
   // addRadar(3, 'kilometers', [-1.405643, 50.928988])
