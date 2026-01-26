@@ -99,6 +99,11 @@ export const useGameStore = defineStore('game', () => {
       addRadar(1, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
       addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
 
+      getTimelineMarkerIndex()
+      const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
+      questions.value.splice(timelineMarkerIndex.value, 1)
+      questions.value.push(marker)
+
       mapStore.calculatePolygons(questions.value)
       console.warn('Calculated polygons')
       drawGameArea()
@@ -112,10 +117,14 @@ export const useGameStore = defineStore('game', () => {
     }
   })
 
-  watch(questions, (newQuestions) => {
-    timelineMarkerIndex.value = newQuestions.findIndex((question) => {
+  function getTimelineMarkerIndex() {
+    timelineMarkerIndex.value = questions.value.findIndex((question) => {
       return question.type === 'TimelineMarker'
     })
+  }
+
+  watch(questions, () => {
+    getTimelineMarkerIndex()
     drawGameArea()
   })
 
