@@ -6,9 +6,9 @@ import {
 import { useGameStore } from '~/stores/GameStore'
 
 const el = useTemplateRef('el')
-const show = ref(true)
+const show = ref(false)
 const gameStore = useGameStore()
-const { questions, timelineMarkerIndex } = storeToRefs(gameStore)
+const { questions } = storeToRefs(gameStore)
 
 useSortable(el, questions, {
   handle: '.handle',
@@ -22,7 +22,7 @@ useSortable(el, questions, {
 
   <Transition name="slide">
     <div
-      v-if="show" ref="el"
+      v-show="show" ref="el"
       class="absolute w-screen bg-accented bottom-0 pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0"
     >
       <div v-for="question in questions" :key="question.id">
