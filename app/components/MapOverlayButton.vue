@@ -9,11 +9,9 @@ function onButtonPress() {
 </script>
 
 <template>
-  <UButton class="text-4xl flex justify-center items-center bg-accented" @click="onButtonPress()">
+  <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100" @click="onButtonPress()">
     {{ props.text }}
   </UButton>
 </template>
 
-<style>
-
-</style>
+<style></style>

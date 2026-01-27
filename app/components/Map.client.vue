@@ -23,7 +23,10 @@ defineExpose({ mapInstance })
 </script>
 
 <template>
-  <MglMap :map-style="style" :center="center" :zoom="zoom" class="w-full h-full" @map:load="onMapLoaded">
+  <MglMap
+    :map-style="style" :center="center" :zoom="zoom" :attribution-control="false" class="w-full h-full"
+    @map:load="onMapLoaded"
+  >
     <MglNavigationControl />
   </MglMap>
 </template>
