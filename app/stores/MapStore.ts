@@ -1,14 +1,21 @@
 import type { MapInstance } from '@indoorequal/vue-maplibre-gl'
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties, Point } from 'geojson'
+import type { Feature } from 'maplibre-gl'
 // import { map } from '@indoorequal/vue-maplibre-gl'
-import { circle, difference, featureCollection, intersect, union } from '@turf/turf'
+import { buffer, circle, difference, featureCollection, intersect, simplify, union } from '@turf/turf'
 import { defineStore } from 'pinia'
 
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
   let colorIndex: number = 0
+
+  async function onMapLoaded() {
+    const map = getMap()
+    const image = await map.loadImage('hatch_pattern.png')
+    map.addImage('hatch-pattern', image.data)
+  }
 
   function getMap() {
     if (mapInstance.value === undefined) {
@@ -63,7 +70,9 @@ export const useMapStore = defineStore('map', () => {
 
   function addQuestionLayer(q: Question) {
     const map = getMap()
-    const colors = ['#00FF00', '#FF0000', '#0000FF', '#FFFF00']
+    // const colors = ['#000000', '#00FF00', '#FF0000', '#0000FF', '#FFFF00', '#FF00FF']
+    const colors = ['#000000']
+
     colorIndex = (q.id) % colors.length
     map.addLayer({
       id: q.mapLayerId,
@@ -72,7 +81,9 @@ export const useMapStore = defineStore('map', () => {
       source: q.mapLayerId,
       paint: {
         'fill-color': colors[colorIndex],
-        'fill-opacity': 0.2,
+        'fill-opacity': 0.5,
+        // 'fill-pattern': 'hatch-pattern',
+
       },
     })
   }
@@ -110,8 +121,6 @@ export const useMapStore = defineStore('map', () => {
       if (q.type === 'Radar') {
         const r = q.question
         if (r !== undefined) {
-          // const name = `${r.radius.toString() + r.units.toString()} Radar (${q.id.toString()})`
-          // mapStore.drawCircle(r.lnglat, r.radius, r.units, name, name, r.hit)
           if (q.fullPolygon !== undefined) {
             if (r.hit) {
               q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
@@ -122,16 +131,21 @@ export const useMapStore = defineStore('map', () => {
             addQuestionSource(q)
 
             currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
-
-            // mapStore.drawPolygon(q.exclusivePolygon, q.mapLayerId)
           }
         }
       }
-      // else if (q.type === 'TimelineMarker') {
-      //   break
-      // }
+      else if (q.type === 'Thermometer') {
+        q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
+
+        // q.exclusivePolygon = q.fullPolygon
+        addQuestionSource(q)
+        currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
+      }
+      // const buffered = buffer(currentRemainingArea as Feature, 100, { units: 'meters' })
+      // currentRemainingArea = buffered
+      // simplify(currentRemainingArea, { tolerance: 0.0001, highQuality: false, mutate: true })
     }
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion }
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded }
 })

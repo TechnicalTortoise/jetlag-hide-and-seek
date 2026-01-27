@@ -15,6 +15,7 @@ const zoom = 12
 
 function onMapLoaded() {
   console.warn('map is loaded')
+  mapStore.onMapLoaded()
   mapLoaded.value = true
 }
 
