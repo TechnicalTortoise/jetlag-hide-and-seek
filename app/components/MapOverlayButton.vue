@@ -3,13 +3,13 @@ const props = defineProps<{
   text: string
 }>()
 
-function onButtonPress() {
-  console.warn('awoo')
-}
+// function onButtonPress() {
+//   console.warn('awoo')
+// }
 </script>
 
 <template>
-  <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100" @click="onButtonPress()">
+  <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100">
     {{ props.text }}
   </UButton>
 </template>

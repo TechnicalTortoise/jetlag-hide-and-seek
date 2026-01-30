@@ -4,6 +4,7 @@ import {
   MglNavigationControl,
   useMap,
 } from '@indoorequal/vue-maplibre-gl'
+import { Marker } from 'maplibre-gl'
 import { useMapStore } from '~/stores/MapStore'
 
 const mapStore = useMapStore()
@@ -17,6 +18,7 @@ function onMapLoaded() {
   console.warn('map is loaded')
   mapStore.onMapLoaded()
   mapLoaded.value = true
+  // const m = new Marker().setLngLat([-1.405643, 50.928988]).addTo(mapInstance.map)
 }
 
 const mapInstance = useMap()
