@@ -30,8 +30,11 @@ function measureHeight() {
       class="fixed pointer-events-none right-4 bottom-4 space-y-4 transition-all duration-300"
       :style="{ bottom: show ? `${slideHeight + 16}px` : '16px' }"
     >
-      <MapOverlayButton text="+" class="pointer-events-auto" @click="toggleShow()" />
-      <MapOverlayButton text="📐" class="pointer-events-auto" @click="toggleShow()" />
+      <MapOverlayButton text="+" class="pointer-events-auto" />
+      <MapOverlayButton
+        text="📐" class="pointer-events-auto"
+        @click="gameStore.measurementToolActive = !gameStore.measurementToolActive"
+      />
       <MapOverlayButton text="🦉" class="pointer-events-auto" @click="toggleShow()" />
     </div>
     <Transition name="slide" @enter="measureHeight">

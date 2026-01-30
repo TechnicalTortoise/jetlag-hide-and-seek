@@ -1,13 +1,5 @@
 <script setup lang="ts">
 const map = useTemplateRef('map')
-
-function blub0() {
-  console.warn('blub0')
-}
-
-function blub1() {
-  console.warn('blub1')
-}
 </script>
 
 <template>
@@ -18,6 +10,10 @@ function blub1() {
 
     <div class="absolute inset-0 pointer-events-none z-20">
       <Timeline />
+    </div>
+
+    <div class="absolute inset-0 pointer-events-none z-20">
+      <MeasurementTool />
     </div>
   </div>
 </template>

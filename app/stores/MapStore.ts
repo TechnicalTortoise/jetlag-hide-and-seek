@@ -1,14 +1,17 @@
 import type { MapInstance } from '@indoorequal/vue-maplibre-gl'
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties, Point } from 'geojson'
-import type { Feature } from 'maplibre-gl'
+import type { Feature, MapMouseEvent } from 'maplibre-gl'
 // import { map } from '@indoorequal/vue-maplibre-gl'
 import { buffer, circle, difference, featureCollection, intersect, simplify, union } from '@turf/turf'
+import { Marker } from 'maplibre-gl'
 import { defineStore } from 'pinia'
 
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
+  const markers: { [id: string]: Marker } = []
+
   let colorIndex: number = 0
 
   async function onMapLoaded() {
@@ -147,5 +150,25 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded }
+  function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined) {
+    const map = getMap()
+    const m = new Marker({ draggable }).setLngLat(lnglat).addTo(map)
+    if (draggable && dragCallback !== undefined) {
+      m.on('drag', () => {
+        dragCallback()
+      })
+    }
+
+    markers[id] = m
+  }
+
+  function removeMarker(id: string) {
+    markers[id]?.remove()
+  }
+
+  function getMarker(id: string): Marker {
+    return markers[id]
+  }
+
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker }
 })

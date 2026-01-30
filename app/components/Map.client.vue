@@ -13,16 +13,14 @@ const { mapLoaded } = storeToRefs(mapStore)
 const style = 'https://tiles.openfreemap.org/styles/liberty'
 const center = [-1.405643, 50.928988] as [number, number]
 const zoom = 12
+const mapInstance = useMap()
+defineExpose({ mapInstance })
 
 function onMapLoaded() {
   console.warn('map is loaded')
   mapStore.onMapLoaded()
   mapLoaded.value = true
-  // const m = new Marker().setLngLat([-1.405643, 50.928988]).addTo(mapInstance.map)
 }
-
-const mapInstance = useMap()
-defineExpose({ mapInstance })
 </script>
 
 <template>

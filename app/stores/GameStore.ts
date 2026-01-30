@@ -31,6 +31,7 @@ export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
+  const measurementToolActive = ref(false)
 
   function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean) {
     const radar: Radar = { radius, units, lnglat, hit }
@@ -245,6 +246,13 @@ export const useGameStore = defineStore('game', () => {
     drawGameArea()
   })
 
+  // function startMeasurement() {
+  //   topBarShowing.value = !topBarShowing.value
+  //   topBarDisplayText.value = 'Select position 1'
+  //   measurementToolActive.value = true
+  // }
+  // startMeasurement()
+
   // addRadar(2, 'kilometers', [-1.405643, 50.928988])
   // addRadar(3, 'kilometers', [-1.405643, 50.928988])
   // addRadar(4, 'kilometers', [-1.405643, 50.928988])
@@ -261,5 +269,5 @@ export const useGameStore = defineStore('game', () => {
 
   // todo move timeline marker to the end
 
-  return { questions, addRadar, timelineMarkerIndex, gameArea }
+  return { questions, addRadar, timelineMarkerIndex, gameArea, measurementToolActive }
 })
