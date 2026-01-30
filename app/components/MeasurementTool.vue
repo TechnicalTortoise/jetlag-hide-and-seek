@@ -14,6 +14,7 @@ let marker0Exists: boolean = false
 let marker1Exists: boolean = false
 const markerId0: string = 'measurement0'
 const markerId1: string = 'measurement1'
+const mapLayerSourceID: string = 'measurementTool'
 
 const text = ref('')
 
@@ -68,8 +69,11 @@ function setDistanceText() {
   else {
     text.value = `${d.toFixed(3)} km`
   }
+
   geojson.features[0].geometry.coordinates[0] = lnglat0
   geojson.features[0].geometry.coordinates[1] = lnglat1
+  const map = mapStore.getMap()
+  map.getSource(mapLayerSourceID).setData(geojson)
 }
 
 watch(measurementToolActive, () => {
@@ -94,15 +98,15 @@ watch(mapStore, () => {
     const map = mapStore.getMap()
     map.on('click', onMapClick)
 
-    map.addSource('measurementTool', {
+    map.addSource(mapLayerSourceID, {
       type: 'geojson',
       data: geojson,
     })
 
     map.addLayer({
-      id: 'measurementTool',
+      id: mapLayerSourceID,
       type: 'line',
-      source: 'measurementTool',
+      source: mapLayerSourceID,
       layout: {
         'line-join': 'round',
         'line-cap': 'round',
