@@ -77,6 +77,8 @@ function setDistanceText() {
 }
 
 watch(measurementToolActive, () => {
+  const map = mapStore.getMap()
+
   if (!measurementToolActive.value) {
     if (marker0Exists) {
       mapStore.removeMarker(markerId0)
@@ -86,18 +88,14 @@ watch(measurementToolActive, () => {
     }
     marker0Exists = false
     marker1Exists = false
+    map.removeLayer(mapLayerSourceID)
+    map.removeSource(mapLayerSourceID)
   }
   else {
     // just enabled
     text.value = 'Select first point'
-  }
-})
-
-watch(mapStore, () => {
-  if (mapStore.mapLoaded) {
-    const map = mapStore.getMap()
-    map.on('click', onMapClick)
-
+    geojson.features[0].geometry.coordinates[0] = [0, 0]
+    geojson.features[0].geometry.coordinates[1] = [0, 0]
     map.addSource(mapLayerSourceID, {
       type: 'geojson',
       data: geojson,
@@ -116,6 +114,13 @@ watch(mapStore, () => {
         'line-width': 8,
       },
     })
+  }
+})
+
+watch(mapStore, () => {
+  if (mapStore.mapLoaded) {
+    const map = mapStore.getMap()
+    map.on('click', onMapClick)
   }
 })
 </script>
