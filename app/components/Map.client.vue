@@ -28,7 +28,7 @@ function onMapLoaded() {
     :map-style="style" :center="center" :zoom="zoom" :attribution-control="false" class="w-full h-full"
     @map:load="onMapLoaded"
   >
-    <MglNavigationControl />
+    <MglNavigationControl :show-compass="false" :show-zoom="false" />
   </MglMap>
 </template>
 
