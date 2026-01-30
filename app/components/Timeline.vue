@@ -4,6 +4,9 @@ import {
   useSortable,
 } from '@vueuse/integrations/useSortable'
 import { useGameStore } from '~/stores/GameStore'
+import { useMapStore } from '~/stores/MapStore'
+
+const mapStore = useMapStore()
 
 const el = useTemplateRef('el')
 const show = ref(false)
@@ -30,6 +33,7 @@ function measureHeight() {
       class="fixed pointer-events-none right-4 bottom-4 space-y-4 transition-all duration-300"
       :style="{ bottom: show ? `${slideHeight + 16}px` : '16px' }"
     >
+      <MapOverlayButton text="🧭" class="pointer-events-auto" @click="mapStore.resetOrientation()" />
       <MapOverlayButton text="+" class="pointer-events-auto" />
       <MapOverlayButton
         text="📐" class="pointer-events-auto"

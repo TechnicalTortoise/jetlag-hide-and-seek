@@ -170,5 +170,16 @@ export const useMapStore = defineStore('map', () => {
     return markers[id]
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker }
+  function setBearing(bearing: number) {
+    const map = getMap()
+    map.setBearing(bearing)
+  }
+
+  function resetOrientation() {
+    const map = getMap()
+    map.setBearing(0)
+    map.setPitch(0)
+  }
+
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation }
 })
