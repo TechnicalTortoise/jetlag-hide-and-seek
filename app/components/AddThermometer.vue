@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
-import { tr } from '@nuxt/ui/runtime/locale/index.js'
+import { distance } from '@turf/turf'
 import { useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
@@ -27,12 +27,25 @@ watch(mapStore, () => {
   }
 })
 
+function setPositionStringToDistance() {
+  if (!marker0Exists || !marker1Exists) {
+    return
+  }
+  if (lnglat0 === undefined || lnglat1 === undefined) {
+    return
+  }
+  const d: number = distance(lnglat0, lnglat1, { units: 'kilometers' })
+  positionString.value = `Distance between markers: ${d.toFixed(2)} km`
+}
+
 function onDrag0() {
   lnglat0 = mapStore.getMarker(markerId0).getLngLat().toArray()
+  setPositionStringToDistance()
 }
 
 function onDrag1() {
-  lnglat1 = mapStore.getMarker(markerId0).getLngLat().toArray()
+  lnglat1 = mapStore.getMarker(markerId1).getLngLat().toArray()
+  setPositionStringToDistance()
 }
 
 function onMapClick(e: MapMouseEvent) {
@@ -49,20 +62,19 @@ function onMapClick(e: MapMouseEvent) {
   if (marker1Exists) {
     mapStore.removeMarker(markerId1)
   }
-  positionString.value = 'Drag markers if you want ig idc'
-  // if both markers exist, keep replacing the last one
   mapStore.addMarker(markerId1, e.lngLat.toArray(), true, onDrag1, '#fa143e') // todo get colors from somewhere proper
   lnglat1 = e.lngLat.toArray()
   marker1Exists = true
+  setPositionStringToDistance()
 }
 
 function close() {
   if (marker0Exists) {
-    mapStore.removeMarker(markerId0)
+    // mapStore.removeMarker(markerId0)
     marker0Exists = false
   }
   if (marker1Exists) {
-    mapStore.removeMarker(markerId1)
+    // mapStore.removeMarker(markerId1)
     marker1Exists = false
   }
 

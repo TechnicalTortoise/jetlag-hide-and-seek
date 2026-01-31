@@ -92,7 +92,7 @@ export const useGameStore = defineStore('game', () => {
 
   function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean) {
     const radar: Radar = { radius, units, lnglat, hit }
-    const c: GeoJsonProperties = circle(lnglat, radius, { steps: 256, units })
+    const c: GeoJsonProperties = circle(lnglat, radius, { steps: 64, units })
     const entirePolygon: GeoJsonProperties = hit ? c : mapStore.invertGeometry(c)
 
     const id = nextQuestionId.value
@@ -102,7 +102,7 @@ export const useGameStore = defineStore('game', () => {
     const q: Question = {
       question: radar,
       type: 'Radar',
-      timelineText: `${radius.toString()} ${units}`,
+      timelineText: `${radius.toString()} km radar`,
       id,
       mapLayerId: name,
       fullPolygon: entirePolygon,
@@ -216,8 +216,8 @@ export const useGameStore = defineStore('game', () => {
     const d: number = distance(lnglatStart, lnglatEnd, 'kilometers')
     const id = nextQuestionId.value
     nextQuestionId.value += 1
-    const name = `${d.toFixed(2)}Km Thermometer${id.toString()} `
-    const timelineText = `${d.toFixed(2)}Km Thermometer`
+    const name = `${d.toFixed(2)} km thermometer${id.toString()}`
+    const timelineText = `${d.toFixed(2)} km thermo`
     const q: Question = {
       question: thermometer,
       type: 'Thermometer',
