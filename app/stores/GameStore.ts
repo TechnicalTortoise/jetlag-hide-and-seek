@@ -75,7 +75,7 @@ export const useGameStore = defineStore('game', () => {
   function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean) {
     const radar: Radar = { radius, units, lnglat, hit }
     const c: GeoJsonProperties = circle(lnglat, radius, { steps: 256, units })
-    const entirePolygon: GeoJsonProperties = c
+    const entirePolygon: GeoJsonProperties = hit ? c : mapStore.invertGeometry(c)
 
     const id = questions.value.length - 1
     const name = `${radius.toString() + units.toString()} Radar (${id.toString()})`

@@ -126,29 +126,14 @@ export const useMapStore = defineStore('map', () => {
         continue
       }
 
-      if (q.type === 'Radar') {
-        const r = q.question
-        if (r !== undefined) {
-          if (q.fullPolygon !== undefined) {
-            if (r.hit) {
-              q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
-            }
-            else {
-              q.exclusivePolygon = difference(featureCollection([currentRemainingArea, invertGeometry(q.fullPolygon)]))
-            }
-            addQuestionSource(q)
-
-            currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
-          }
-        }
+      if (q.fullPolygon === undefined) {
+        continue
       }
-      else if (q.type === 'Thermometer') {
-        q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
 
-        // q.exclusivePolygon = q.fullPolygon
-        addQuestionSource(q)
-        currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
-      }
+      q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
+      addQuestionSource(q)
+      currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
+
       // const buffered = buffer(currentRemainingArea as Feature, 100, { units: 'meters' })
       // currentRemainingArea = buffered
       // simplify(currentRemainingArea, { tolerance: 0.0001, highQuality: false, mutate: true })
@@ -186,5 +171,5 @@ export const useMapStore = defineStore('map', () => {
     map.setPitch(0)
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation }
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry }
 })
