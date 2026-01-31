@@ -244,9 +244,10 @@ export const useGameStore = defineStore('game', () => {
       addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
       addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
       // addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
+      addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
 
-      // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
-      // addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+      addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], true)
+
       // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
       // addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)
 

@@ -162,8 +162,8 @@ export const useMapStore = defineStore('map', () => {
         continue
       }
 
-      q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
-      currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
+      // q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
+      // currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
 
       if (cumulativePolygon === undefined) {
         cumulativePolygon = invertGeometry(q.fullPolygon)
@@ -173,10 +173,6 @@ export const useMapStore = defineStore('map', () => {
       }
       q.cumulativePolygon = cumulativePolygon
       addQuestionSource(q)
-
-      // const buffered = buffer(currentRemainingArea as Feature, 100, { units: 'meters' })
-      // currentRemainingArea = buffered
-      // simplify(currentRemainingArea, { tolerance: 0.0001, highQuality: false, mutate: true })
     }
   }
 
