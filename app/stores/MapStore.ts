@@ -1,7 +1,7 @@
 import type { MapInstance } from '@indoorequal/vue-maplibre-gl'
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties, Point } from 'geojson'
-import type { Feature, MapMouseEvent } from 'maplibre-gl'
+import type { Color, type Feature, type MapMouseEvent } from 'maplibre-gl'
 // import { map } from '@indoorequal/vue-maplibre-gl'
 import { buffer, circle, difference, featureCollection, intersect, simplify, union } from '@turf/turf'
 import { Marker } from 'maplibre-gl'
@@ -176,9 +176,9 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined) {
+  function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff') {
     const map = getMap()
-    const m = new Marker({ draggable }).setLngLat(lnglat).addTo(map)
+    const m = new Marker({ draggable, color }).setLngLat(lnglat).addTo(map)
     if (draggable && dragCallback !== undefined) {
       m.on('drag', () => {
         dragCallback()

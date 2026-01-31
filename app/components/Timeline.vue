@@ -10,8 +10,8 @@ import { useMapStore } from '~/stores/MapStore'
 const gameStore = useGameStore()
 
 const items = ref<DropdownMenuItem[][]>([[
-  { label: 'Radar', type: 'link', onSelect: bleebus },
-  { label: 'Thermometer', type: 'link', onSelect: bleebus },
+  { label: 'Radar', type: 'link', onSelect: () => { gameStore.addingRadar = !gameStore.addingRadar } },
+  { label: 'Thermometer', type: 'link', onSelect: () => { gameStore.addingThermometer = !gameStore.addingThermometer } },
   { label: 'Region', type: 'link', onSelect: bleebus },
 ]])
 

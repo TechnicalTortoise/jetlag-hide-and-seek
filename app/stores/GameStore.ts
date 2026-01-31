@@ -34,6 +34,7 @@ export const useGameStore = defineStore('game', () => {
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
   const measurementToolActive = ref(false)
   const addingRadar = ref(false)
+  const addingThermometer = ref(false)
   const nextQuestionId = ref(0)
 
   const gameArea = {
@@ -228,6 +229,8 @@ export const useGameStore = defineStore('game', () => {
       cumulativePolygon: undefined,
     }
     questions.value.push(q)
+    moveTimelineMarkerToEnd()
+    drawGameArea()
   }
 
   function moveTimelineMarkerToEnd() {
@@ -274,5 +277,15 @@ export const useGameStore = defineStore('game', () => {
     drawGameArea()
   })
 
-  return { questions, addRadar, timelineMarkerIndex, gameArea, measurementToolActive, addingRadar, removeQuestion }
+  return {
+    questions,
+    addRadar,
+    addThermometer,
+    timelineMarkerIndex,
+    gameArea,
+    measurementToolActive,
+    addingRadar,
+    addingThermometer,
+    removeQuestion,
+  }
 })

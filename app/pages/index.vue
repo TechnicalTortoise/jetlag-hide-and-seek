@@ -17,5 +17,6 @@ const map = useTemplateRef('map')
     </div>
 
     <AddRadarDrawer />
+    <AddThermometer />
   </div>
 </template>
