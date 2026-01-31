@@ -33,22 +33,48 @@ export const useMapStore = defineStore('map', () => {
   function setMapInstance(theMapInstance: MapInstance) {
     mapInstance.value = theMapInstance
   }
-
   function invertGeometry(feature: GeoJsonProperties) {
-    return {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
-          feature.geometry.coordinates[0],
-        ],
-      },
+    const coords = feature.geometry.coordinates
+
+    // Check if already inverted (first ring is the world boundary)
+    const firstRing = coords[0]
+    const isWorldBoundary
+      = firstRing.length === 5
+        && firstRing[0][0] === -180 && firstRing[0][1] === -90
+        && firstRing[1][0] === 180 && firstRing[1][1] === -90
+        && firstRing[2][0] === 180 && firstRing[2][1] === 90
+        && firstRing[3][0] === -180 && firstRing[3][1] === 90
+
+    if (isWorldBoundary && coords.length > 1) {
+      // Already inverted - extract the original polygon (second ring)
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [coords[1]], // Return the hole as the main polygon
+        },
+      }
+    }
+    else {
+      // Not inverted - wrap with world boundary
+      return {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
+            coords[0],
+          ],
+        },
+      }
     }
   }
 
   function drawQuestion(q: Question) {
     const map = getMap()
+    if (map === undefined) {
+      return
+    }
     if (map.getLayer(q.mapLayerId) === undefined) {
       addQuestionLayer(q)
     }
@@ -56,6 +82,9 @@ export const useMapStore = defineStore('map', () => {
 
   function hideQuestion(q: Question) {
     const map = getMap()
+    if (map === undefined) {
+      return
+    }
     if (map.getLayer(q.mapLayerId) !== undefined) {
       removeQuestionLayer(q)
     }
@@ -65,10 +94,10 @@ export const useMapStore = defineStore('map', () => {
     const map = getMap()
     let source = map.getSource(q.mapLayerId)
     if (source === undefined) {
-      map.addSource(q.mapLayerId, { type: 'geojson', data: q.exclusivePolygon })
+      map.addSource(q.mapLayerId, { type: 'geojson', data: q.cumulativePolygon })
       return
     }
-    source.setData(q.exclusivePolygon)
+    source.setData(q.cumulativePolygon)
   }
 
   function removeQuestionSource(q: Question) {
@@ -79,7 +108,7 @@ export const useMapStore = defineStore('map', () => {
   function addQuestionLayer(q: Question) {
     const map = getMap()
     // const colors = ['#000000', '#00FF00', '#FF0000', '#0000FF', '#FFFF00', '#FF00FF']
-    const colors = ['#000000']
+    const colors = ['#000050']
 
     colorIndex = (q.id) % colors.length
     map.addLayer({
@@ -98,7 +127,9 @@ export const useMapStore = defineStore('map', () => {
 
   function removeQuestionLayer(q: Question) {
     const map = getMap()
-    map.removeLayer(q.mapLayerId)
+    if (map.getLayer(q.mapLayerId)) {
+      map.removeLayer(q.mapLayerId)
+    }
   }
 
   function calculatePolygons(questions: Question[]) {
@@ -120,6 +151,7 @@ export const useMapStore = defineStore('map', () => {
       },
     }
     let currentRemainingArea: GeoJsonProperties = fullWorld
+    let cumulativePolygon: GeoJsonProperties | undefined
     for (let i = 0; i < questions.length; i += 1) {
       const q: Question | undefined = questions[i]
       if (q === undefined) {
@@ -131,8 +163,16 @@ export const useMapStore = defineStore('map', () => {
       }
 
       q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
-      addQuestionSource(q)
       currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
+
+      if (cumulativePolygon === undefined) {
+        cumulativePolygon = invertGeometry(q.fullPolygon)
+      }
+      else {
+        cumulativePolygon = union(featureCollection([cumulativePolygon, invertGeometry(q.fullPolygon)]))
+      }
+      q.cumulativePolygon = cumulativePolygon
+      addQuestionSource(q)
 
       // const buffered = buffer(currentRemainingArea as Feature, 100, { units: 'meters' })
       // currentRemainingArea = buffered
@@ -171,5 +211,5 @@ export const useMapStore = defineStore('map', () => {
     map.setPitch(0)
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry }
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry, removeQuestionSource, removeQuestionLayer }
 })

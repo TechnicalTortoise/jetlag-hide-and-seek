@@ -61,7 +61,7 @@ function measureHeight() {
         class="fixed w-screen bg-accented pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0 bottom-0"
       >
         <div v-for="question in questions" :key="question.id">
-          <TimelineItem v-if="question.id > -1" :text="question.timelineText" />
+          <TimelineItem v-if="question.id > -1" :id="question.id" :text="question.timelineText" />
           <div v-else class="w-8 h-24 bg-red-400 handle" />
         </div>
       </div>

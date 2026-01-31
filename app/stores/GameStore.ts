@@ -12,6 +12,7 @@ export interface Question {
   mapLayerId: string
   fullPolygon: GeoJsonProperties | undefined
   exclusivePolygon: GeoJsonProperties | undefined
+  cumulativePolygon: GeoJsonProperties | undefined
 }
 
 interface Radar {
@@ -33,6 +34,7 @@ export const useGameStore = defineStore('game', () => {
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
   const measurementToolActive = ref(false)
   const addingRadar = ref(false)
+  const nextQuestionId = ref(0)
 
   const gameArea = {
     center: [-1.407516809729255, 50.94303107100244] as [number, number],
@@ -49,27 +51,42 @@ export const useGameStore = defineStore('game', () => {
     mapLayerId: '',
     fullPolygon: undefined,
     exclusivePolygon: undefined,
+    cumulativePolygon: undefined,
   })
 
   const drawGameArea = () => {
-    let pastTimelineMarker: boolean = false
+    mapStore.calculatePolygons(questions.value)
+    getTimelineMarkerIndex()
+    if (!mapStore.mapLoaded) {
+      return
+    }
     for (let i = 0; i < questions.value.length; i += 1) {
       const q: Question | undefined = questions.value[i]
       if (q === undefined) {
         console.warn('Question undefined')
         continue
       }
-      if (q.type === 'TimelineMarker') {
-        pastTimelineMarker = true
-        continue
-      }
-      if (pastTimelineMarker) {
+      if (i !== timelineMarkerIndex.value - 1) {
         mapStore.hideQuestion(q)
       }
       else {
         mapStore.drawQuestion(q)
+        console.warn('Drawing q', q.timelineText)
       }
     }
+  }
+
+  function removeQuestion(id: number) {
+    const index = questions.value.findIndex((q) => {
+      return id === q.id
+    })
+    if (index === -1) {
+      return
+    }
+    mapStore.removeQuestionLayer(questions.value[index])
+    // mapStore.removeQuestionSource(questions.value[index])
+    questions.value.splice(index, 1)
+    drawGameArea()
   }
 
   function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean) {
@@ -77,7 +94,8 @@ export const useGameStore = defineStore('game', () => {
     const c: GeoJsonProperties = circle(lnglat, radius, { steps: 256, units })
     const entirePolygon: GeoJsonProperties = hit ? c : mapStore.invertGeometry(c)
 
-    const id = questions.value.length - 1
+    const id = nextQuestionId.value
+    nextQuestionId.value += 1
     const name = `${radius.toString() + units.toString()} Radar (${id.toString()})`
 
     const q: Question = {
@@ -88,13 +106,12 @@ export const useGameStore = defineStore('game', () => {
       mapLayerId: name,
       fullPolygon: entirePolygon,
       exclusivePolygon: undefined,
+      cumulativePolygon: undefined,
     }
     questions.value.push(q)
 
     moveTimelineMarkerToEnd()
-    mapStore.calculatePolygons(questions.value)
     drawGameArea()
-    //   }
   }
 
   function createThermometerPolygon(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
@@ -196,7 +213,8 @@ export const useGameStore = defineStore('game', () => {
 
     const poly = createThermometerPolygon(lnglatStart, lnglatEnd, warmer)
     const d: number = distance(lnglatStart, lnglatEnd, 'kilometers')
-    const id = questions.value.length - 1
+    const id = nextQuestionId.value
+    nextQuestionId.value += 1
     const name = `${d.toFixed(2)}Km Thermometer${id.toString()} `
     const timelineText = `${d.toFixed(2)}Km Thermometer`
     const q: Question = {
@@ -207,6 +225,7 @@ export const useGameStore = defineStore('game', () => {
       mapLayerId: name,
       fullPolygon: poly,
       exclusivePolygon: undefined,
+      cumulativePolygon: undefined,
     }
     questions.value.push(q)
   }
@@ -216,25 +235,23 @@ export const useGameStore = defineStore('game', () => {
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
     questions.value.splice(timelineMarkerIndex.value, 1)
     questions.value.push(marker)
+    getTimelineMarkerIndex()
   }
 
   watch(mapLoaded, () => {
     console.warn('map loaded watcher says ', mapLoaded.value)
     if (mapLoaded.value) {
       addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
-      addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
+      addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
       // addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
 
       // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
-      addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
-      addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
-      addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)
+      // addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+      // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
+      // addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)
 
       moveTimelineMarkerToEnd()
-      mapStore.calculatePolygons(questions.value)
       drawGameArea()
-      // mapStore.calculatePolygons(questions.value)
-      // drawGameArea()
     }
   })
 
@@ -256,28 +273,5 @@ export const useGameStore = defineStore('game', () => {
     drawGameArea()
   })
 
-  // function startMeasurement() {
-  //   topBarShowing.value = !topBarShowing.value
-  //   topBarDisplayText.value = 'Select position 1'
-  //   measurementToolActive.value = true
-  // }
-  // startMeasurement()
-
-  // addRadar(2, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(3, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(4, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(5, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(6, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(7, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(8, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(9, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(10, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(11, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(12, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(13, 'kilometers', [-1.405643, 50.928988])
-  // addRadar(14, 'kilometers', [-1.4065168097292855, 50.94303107100244])
-
-  // todo move timeline marker to the end
-
-  return { questions, addRadar, timelineMarkerIndex, gameArea, measurementToolActive, addingRadar }
+  return { questions, addRadar, timelineMarkerIndex, gameArea, measurementToolActive, addingRadar, removeQuestion }
 })
