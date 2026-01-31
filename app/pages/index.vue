@@ -15,5 +15,7 @@ const map = useTemplateRef('map')
     <div class="absolute inset-0 pointer-events-none z-20">
       <MeasurementTool />
     </div>
+
+    <AddRadarDrawer />
   </div>
 </template>

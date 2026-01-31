@@ -63,7 +63,12 @@ export const useMapStore = defineStore('map', () => {
 
   function addQuestionSource(q: Question) {
     const map = getMap()
-    map.addSource(q.mapLayerId, { type: 'geojson', data: q.exclusivePolygon })
+    let source = map.getSource(q.mapLayerId)
+    if (source === undefined) {
+      map.addSource(q.mapLayerId, { type: 'geojson', data: q.exclusivePolygon })
+      return
+    }
+    source.setData(q.exclusivePolygon)
   }
 
   function removeQuestionSource(q: Question) {

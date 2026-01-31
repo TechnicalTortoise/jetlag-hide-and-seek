@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { DropdownMenuItem } from '@nuxt/ui'
 import {
   moveArrayElement,
   useSortable,
@@ -6,12 +7,23 @@ import {
 import { useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
+const gameStore = useGameStore()
+
+const items = ref<DropdownMenuItem[][]>([[
+  { label: 'Radar', type: 'link', onSelect: bleebus },
+  { label: 'Thermometer', type: 'link', onSelect: bleebus },
+  { label: 'Region', type: 'link', onSelect: bleebus },
+]])
+
+function bleebus() {
+  gameStore.addingRadar = !gameStore.addingRadar
+}
+
 const mapStore = useMapStore()
 
 const el = useTemplateRef('el')
 const show = ref(false)
 const slideHeight = ref(0)
-const gameStore = useGameStore()
 const { questions } = storeToRefs(gameStore)
 
 useSortable(el, questions, {
@@ -34,7 +46,9 @@ function measureHeight() {
       :style="{ bottom: show ? `${slideHeight + 16}px` : '16px' }"
     >
       <MapOverlayButton text="🧭" class="pointer-events-auto" @click="mapStore.resetOrientation()" />
-      <MapOverlayButton text="+" class="pointer-events-auto" />
+      <UDropdownMenu :items="items" :content="{ side: 'left' }">
+        <MapOverlayButton text="+" class="pointer-events-auto" />
+      </UDropdownMenu>
       <MapOverlayButton
         text="📐" class="pointer-events-auto"
         @click="gameStore.measurementToolActive = !gameStore.measurementToolActive"
