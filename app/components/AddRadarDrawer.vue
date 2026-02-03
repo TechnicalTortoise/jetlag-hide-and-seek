@@ -17,8 +17,13 @@ let lnglat: [number, number] | undefined
 
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
 
+watch(state, () => {
+  if (state.value !== State.ADDING_RADAR) {
+    reset()
+  }
+})
+
 const isActive = computed(() => {
-  console.warn('bkiibk', state.value)
   return state.value === State.ADDING_RADAR
 })
 
@@ -56,7 +61,7 @@ function setPositionText() {
   positionString.value = `${lnglat[1].toFixed(precision)},${lnglat[0].toFixed(precision)}`
 }
 
-function close() {
+function reset() {
   lnglat = undefined
   setPositionText()
   if (markerExists) {
@@ -65,6 +70,10 @@ function close() {
   }
   radiusKm.value = 0
   hit.value = false
+}
+
+function close() {
+  reset()
   state.value = State.MAIN
 }
 
@@ -79,7 +88,7 @@ function add() {
 
 <template>
   <UDrawer
-    v-model:open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
     :ui="{ container: 'max-w-xl mx-auto' }" title="New Radar"
   >
     <template #body>

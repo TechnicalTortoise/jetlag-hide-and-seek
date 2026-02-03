@@ -21,10 +21,13 @@ let lnglat1: [number, number] | undefined
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
 
 const isActive = computed(() => {
+  return state.value === State.ADDING_THERMOMENTER
+})
+
+watch(state, () => {
   if (state.value !== State.ADDING_THERMOMENTER) {
     reset()
   }
-  return state.value === State.ADDING_THERMOMENTER
 })
 
 watch(mapStore, () => {
@@ -108,7 +111,7 @@ function add() {
 
 <template>
   <UDrawer
-    v-model:open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
     :ui="{ container: 'max-w-xl mx-auto' }" title="New Thermometer"
   >
     <template #body>

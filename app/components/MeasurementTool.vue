@@ -18,8 +18,6 @@ const mapLayerSourceID: string = 'measurementTool'
 
 const text = ref('')
 
-const el = useTemplateRef('el')
-
 const isActive = computed(() => {
   return state.value === State.MEASURING
 })
@@ -131,27 +129,25 @@ watch(mapStore, () => {
     map.on('click', onMapClick)
   }
 })
+
+function close() {
+  state.value = State.MAIN
+}
 </script>
 
 <template>
-  <Transition name="slideTopBar">
-    <div
-      v-show="isActive" ref="el"
-      class="fixed w-screen bg-accented pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0 top-0 justify-center py-4"
-    >
+  <UDrawer
+    :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }" title="Measurement Tool"
+  >
+    <template #body>
       {{ text }}
-    </div>
-  </Transition>
+    </template>
+
+    <template #footer>
+      <UButton label="Close" color="neutral" variant="outline" class="justify-center" @click="close" />
+    </template>
+  </UDrawer>
 </template>
 
-<style>
-.slideTopBar-enter-active,
-.slideTopBar-leave-active {
-  transition: transform 0.3s ease;
-}
-
-.slideTopBar-enter-from,
-.slideTopBar-leave-to {
-  transform: translateY(-100%);
-}
-</style>
+<style></style>
