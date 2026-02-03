@@ -1,6 +1,7 @@
 import type { Units } from '@turf/turf'
 import type { FeatureCollection, GeoJsonProperties } from 'geojson'
 import { buffer, centroid, circle, difference, distance, featureCollection, flatten, lineString } from '@turf/turf'
+import * as turf from '@turf/turf'
 import { useMapStore } from '~/stores/MapStore'
 
 // type guards
@@ -28,13 +29,24 @@ interface Thermometer {
   warmer: boolean
 }
 
+export enum State {
+  SELECTING_GAME_AREA,
+  MAIN,
+  MEASURING,
+  ADDING_RADAR,
+  MODIFYING_RADAR,
+  ADDING_THERMOMENTER,
+  MODIFYING_THERMOMETER,
+  ADDING_CUSTOM_REGION,
+  EDITING_CUSTOM_REGION,
+  ADDING_PIN,
+}
+
 export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
-  const measurementToolActive = ref(false)
-  const addingRadar = ref(false)
-  const addingThermometer = ref(false)
+  const state = ref(State.MAIN)
   const nextQuestionId = ref(0)
 
   const gameArea = {
@@ -208,6 +220,10 @@ export const useGameStore = defineStore('game', () => {
     return undefined
   }
 
+  function createThermometerPolygon2(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+    const midPoint: [number, number] = turf.midpoint(lnglatStart, lnglatEnd)
+  }
+
   function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
     const thermometer: Thermometer = { lnglatStart, lnglatEnd, warmer }
     // const entirePolygon: GeoJsonProperties = c
@@ -283,9 +299,7 @@ export const useGameStore = defineStore('game', () => {
     addThermometer,
     timelineMarkerIndex,
     gameArea,
-    measurementToolActive,
-    addingRadar,
-    addingThermometer,
+    state,
     removeQuestion,
   }
 })

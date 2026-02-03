@@ -1,23 +1,26 @@
 <script lang="ts" setup>
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { chatPromptSubmit } from '#build/ui'
 import {
   moveArrayElement,
   useSortable,
 } from '@vueuse/integrations/useSortable'
-import { useGameStore } from '~/stores/GameStore'
+import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
+const { state } = storeToRefs(gameStore)
 
 const items = ref<DropdownMenuItem[][]>([[
-  { label: 'Radar', type: 'link', onSelect: () => { gameStore.addingRadar = !gameStore.addingRadar } },
-  { label: 'Thermometer', type: 'link', onSelect: () => { gameStore.addingThermometer = !gameStore.addingThermometer } },
+  { label: 'Radar', type: 'link', onSelect: () => { state.value = State.ADDING_RADAR } },
+  { label: 'Thermometer', type: 'link', onSelect: () => { state.value = State.ADDING_THERMOMENTER } },
   { label: 'Region - custom?', type: 'link', onSelect: bleebus },
   { label: 'Pin', type: 'link' },
 ]])
 
 function bleebus() {
-  gameStore.addingRadar = !gameStore.addingRadar
+  // gameStore.addingRadar = !gameStore.addingRadar
+  console.warn('state is ', state.value)
 }
 
 const mapStore = useMapStore()
@@ -38,6 +41,14 @@ function toggleShow() {
 function measureHeight() {
   slideHeight.value = el.value?.offsetHeight || 0
 }
+function toggleMeasuring() {
+  if (state.value === State.MEASURING) {
+    state.value = State.MAIN
+  }
+  else {
+    state.value = State.MEASURING
+  }
+}
 </script>
 
 <template>
@@ -51,8 +62,9 @@ function measureHeight() {
         <MapOverlayButton text="+" class="pointer-events-auto" />
       </UDropdownMenu>
       <MapOverlayButton
-        text="📐" class="pointer-events-auto"
-        @click="gameStore.measurementToolActive = !gameStore.measurementToolActive"
+        text="📐" class="pointer-events-auto" @click="
+          toggleMeasuring()
+        "
       />
       <MapOverlayButton text="🦉" class="pointer-events-auto" @click="toggleShow()" />
     </div>

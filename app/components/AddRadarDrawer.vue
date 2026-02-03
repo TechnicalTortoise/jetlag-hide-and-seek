@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
 import { tr } from '@nuxt/ui/runtime/locale/index.js'
-import { useGameStore } from '~/stores/GameStore'
+import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { addingRadar } = storeToRefs(gameStore)
+const { state } = storeToRefs(gameStore)
 const radiusKm = ref(0)
 const hit = ref(false)
 const markerId = 'NewRadarMarker'
@@ -16,6 +16,11 @@ let markerExists: boolean = false // todo reset everything on open drawer
 let lnglat: [number, number] | undefined
 
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
+
+const isActive = computed(() => {
+  console.warn('bkiibk', state.value)
+  return state.value === State.ADDING_RADAR
+})
 
 watch(mapStore, () => {
   if (mapStore.mapLoaded) {
@@ -30,7 +35,7 @@ function onMarkerDrag() {
 }
 
 function onMapClick(e: MapMouseEvent) {
-  if (!addingRadar.value) {
+  if (!isActive.value) {
     return
   }
   lnglat = e.lngLat.toArray()
@@ -60,7 +65,7 @@ function close() {
   }
   radiusKm.value = 0
   hit.value = false
-  addingRadar.value = false
+  state.value = State.MAIN
 }
 
 function add() {
@@ -74,8 +79,8 @@ function add() {
 
 <template>
   <UDrawer
-    v-model:open="addingRadar" :handle="false" :overlay="false" :modal="false" :dismissible="false"
-    direction="top" :ui="{ container: 'max-w-xl mx-auto' }" title="New Radar"
+    v-model:open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }" title="New Radar"
   >
     <template #body>
       {{ positionString }}

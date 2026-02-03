@@ -1,12 +1,12 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
 import { distance } from '@turf/turf'
-import { useGameStore } from '~/stores/GameStore'
+import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { addingThermometer } = storeToRefs(gameStore)
+const { state } = storeToRefs(gameStore)
 const warmer = ref(false)
 const markerId0 = 'NewThermometerMarker0'
 const markerId1 = 'NewThermometerMarker1'
@@ -19,6 +19,13 @@ let lnglat0: [number, number] | undefined
 let lnglat1: [number, number] | undefined
 
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
+
+const isActive = computed(() => {
+  if (state.value !== State.ADDING_THERMOMENTER) {
+    reset()
+  }
+  return state.value === State.ADDING_THERMOMENTER
+})
 
 watch(mapStore, () => {
   if (mapStore.mapLoaded) {
@@ -49,7 +56,7 @@ function onDrag1() {
 }
 
 function onMapClick(e: MapMouseEvent) {
-  if (!addingThermometer.value) {
+  if (!isActive.value) {
     return
   }
   if (!marker0Exists) {
@@ -69,17 +76,21 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function close() {
+  state.value = State.MAIN
+  reset()
+}
+
+function reset() {
   if (marker0Exists) {
-    // mapStore.removeMarker(markerId0)
+    mapStore.removeMarker(markerId0)
     marker0Exists = false
   }
   if (marker1Exists) {
-    // mapStore.removeMarker(markerId1)
+    mapStore.removeMarker(markerId1)
     marker1Exists = false
   }
 
   warmer.value = false
-  addingThermometer.value = false
   lnglat0 = undefined
   lnglat1 = undefined
   positionString.value = defaultPositionString
@@ -97,8 +108,8 @@ function add() {
 
 <template>
   <UDrawer
-    v-model:open="addingThermometer" :handle="false" :overlay="false" :modal="false" :dismissible="false"
-    direction="top" :ui="{ container: 'max-w-xl mx-auto' }" title="New Thermometer"
+    v-model:open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }" title="New Thermometer"
   >
     <template #body>
       {{ positionString }}

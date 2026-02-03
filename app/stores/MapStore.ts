@@ -177,6 +177,7 @@ export const useMapStore = defineStore('map', () => {
   }
 
   function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff') {
+    console.warn('Adding marker ', id)
     const map = getMap()
     const m = new Marker({ draggable, color }).setLngLat(lnglat).addTo(map)
     if (draggable && dragCallback !== undefined) {

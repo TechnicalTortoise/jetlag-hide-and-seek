@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
 import { distance } from '@turf/turf'
-import { useGameStore } from '~/stores/GameStore'
+import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 import MapOverlayButton from './MapOverlayButton.vue'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 
-const { measurementToolActive } = storeToRefs(gameStore)
+const { state } = storeToRefs(gameStore)
 
 let marker0Exists: boolean = false
 let marker1Exists: boolean = false
@@ -19,6 +19,10 @@ const mapLayerSourceID: string = 'measurementTool'
 const text = ref('')
 
 const el = useTemplateRef('el')
+
+const isActive = computed(() => {
+  return state.value === State.MEASURING
+})
 
 const geojson = {
   type: 'FeatureCollection',
@@ -34,7 +38,7 @@ const geojson = {
 }
 
 function onMapClick(e: MapMouseEvent) {
-  if (!measurementToolActive.value) {
+  if (!isActive.value) {
     return
   }
   if (!marker0Exists) {
@@ -76,10 +80,10 @@ function setDistanceText() {
   map.getSource(mapLayerSourceID).setData(geojson)
 }
 
-watch(measurementToolActive, () => {
+watch(state, () => {
   const map = mapStore.getMap()
 
-  if (!measurementToolActive.value) {
+  if (!isActive.value) {
     if (marker0Exists) {
       mapStore.removeMarker(markerId0)
     }
@@ -88,8 +92,12 @@ watch(measurementToolActive, () => {
     }
     marker0Exists = false
     marker1Exists = false
-    map.removeLayer(mapLayerSourceID)
-    map.removeSource(mapLayerSourceID)
+    if (map.getLayer(mapLayerSourceID)) {
+      map.removeLayer(mapLayerSourceID)
+    }
+    if (map.getSource(mapLayerSourceID)) {
+      map.removeSource(mapLayerSourceID)
+    }
   }
   else {
     // just enabled
@@ -128,7 +136,7 @@ watch(mapStore, () => {
 <template>
   <Transition name="slideTopBar">
     <div
-      v-show="measurementToolActive" ref="el"
+      v-show="isActive" ref="el"
       class="fixed w-screen bg-accented pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0 top-0 justify-center py-4"
     >
       {{ text }}
