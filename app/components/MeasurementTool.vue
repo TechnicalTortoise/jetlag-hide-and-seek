@@ -116,8 +116,9 @@ watch(state, () => {
         'line-cap': 'round',
       },
       paint: {
-        'line-color': '#888',
+        'line-color': '#52c5ff',
         'line-width': 8,
+        'line-dasharray': [1, 2],
       },
     })
   }
