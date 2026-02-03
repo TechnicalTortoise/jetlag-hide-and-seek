@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { useGameStore } from '~/stores/GameStore'
+import { State, useGameStore } from '~/stores/GameStore'
 
 const props = defineProps<{
   text: string
@@ -9,9 +9,24 @@ const props = defineProps<{
 const gameStore = useGameStore()
 
 function onClick() {
-  console.warn('looking for id ', props.id)
-
-  gameStore.removeQuestion(props.id)
+  gameStore.setQuestionToEdit(props.id)
+  const q = gameStore.questionBeingEdited
+  if (q === undefined) {
+    return
+  }
+  switch (q.type) {
+    case 'Radar':
+    {
+      gameStore.state = State.MODIFYING_RADAR
+      break
+    }
+    case 'Thermometer':
+    {
+      gameStore.state = State.MODIFYING_THERMOMETER
+      break
+    }
+  }
+  // gameStore.removeQuestion(props.id)
 }
 </script>
 

@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
+import type { Question } from '~/stores/GameStore'
 import { tr } from '@nuxt/ui/runtime/locale/index.js'
+import { LngLatBounds } from 'maplibre-gl'
 import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { state } = storeToRefs(gameStore)
+const { state, questionBeingEdited } = storeToRefs(gameStore)
 const radiusKm = ref(0)
 const hit = ref(false)
 const markerId = 'NewRadarMarker'
@@ -18,13 +20,30 @@ let lnglat: [number, number] | undefined
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
 
 watch(state, () => {
-  if (state.value !== State.ADDING_RADAR) {
+  if (state.value !== State.ADDING_RADAR && state.value !== State.MODIFYING_RADAR) {
     reset()
   }
 })
 
+watch(questionBeingEdited, () => {
+  if (state.value === State.MODIFYING_RADAR) {
+    const q = gameStore.questionBeingEdited
+    if (q === undefined || q.type !== 'Radar') {
+      return
+    }
+    const r: Radar = q.question
+    lnglat = r.lnglat
+    hit.value = r.hit
+    radiusKm.value = r.radius
+  }
+})
+
 const isActive = computed(() => {
-  return state.value === State.ADDING_RADAR
+  return state.value === State.ADDING_RADAR || state.value === State.MODIFYING_RADAR
+})
+
+const isModifying = computed(() => {
+  return state.value === State.MODIFYING_RADAR
 })
 
 watch(mapStore, () => {
@@ -77,19 +96,32 @@ function close() {
   state.value = State.MAIN
 }
 
-function add() {
+function addOrEdit() {
   if (lnglat === undefined) {
     return
   }
-  gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value)
+  if (isModifying.value) {
+    gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value, gameStore.questionBeingEdited?.id)
+  }
+  else {
+    gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value)
+  }
+
   close()
+}
+
+function deleteRadar() {
+  if (questionBeingEdited.value !== undefined) {
+    gameStore.removeQuestion(questionBeingEdited.value.id)
+    close()
+  }
 }
 </script>
 
 <template>
   <UDrawer
     :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
-    :ui="{ container: 'max-w-xl mx-auto' }" title="New Radar"
+    :ui="{ container: 'max-w-xl mx-auto' }" :title="isModifying ? 'Modifying Radar' : 'Adding Radar'"
   >
     <template #body>
       {{ positionString }}
@@ -107,7 +139,11 @@ function add() {
     </template>
 
     <template #footer>
-      <UButton label="Add" color="neutral" class="justify-center" :disabled="!addButtonEnabled" @click="add" />
+      <UButton
+        :label="isModifying ? 'Update' : 'Add'" color="primary" class="justify-center"
+        :disabled="!addButtonEnabled" @click="addOrEdit"
+      />
+      <UButton v-if="isModifying" label="Delete" color="error" class="justify-center" @click="deleteRadar" />
       <UButton label="Cancel" color="neutral" variant="outline" class="justify-center" @click="close" />
     </template>
   </UDrawer>

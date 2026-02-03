@@ -2,6 +2,7 @@ import type { Units } from '@turf/turf'
 import type { FeatureCollection, GeoJsonProperties } from 'geojson'
 import { buffer, centroid, circle, difference, distance, featureCollection, flatten, lineString } from '@turf/turf'
 import * as turf from '@turf/turf'
+import { isQuestionOrPlusOrMinusToken } from 'typescript'
 import { useMapStore } from '~/stores/MapStore'
 
 // type guards
@@ -16,7 +17,7 @@ export interface Question {
   cumulativePolygon: GeoJsonProperties | undefined
 }
 
-interface Radar {
+export interface Radar {
   radius: number
   units: Units
   lnglat: [number, number]
@@ -48,6 +49,7 @@ export const useGameStore = defineStore('game', () => {
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
   const state = ref(State.MAIN)
   const nextQuestionId = ref(0)
+  const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
 
   const gameArea = {
     center: [-1.407516809729255, 50.94303107100244] as [number, number],
@@ -102,13 +104,29 @@ export const useGameStore = defineStore('game', () => {
     drawGameArea()
   }
 
-  function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean) {
+  function setQuestionToEdit(id: number) {
+    const index = questions.value.findIndex((q) => {
+      return id === q.id
+    })
+    if (index === -1) {
+      questionBeingEdited.value = undefined
+    }
+    else {
+      questionBeingEdited.value = questions.value[index]
+    }
+  }
+
+  function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean, id: number = -1) {
+    // if radar already exists, then just modify
     const radar: Radar = { radius, units, lnglat, hit }
     const c: GeoJsonProperties = circle(lnglat, radius, { steps: 64, units })
     const entirePolygon: GeoJsonProperties = hit ? c : mapStore.invertGeometry(c)
+    const newRadar = id === -1
+    if (newRadar) {
+      id = nextQuestionId.value
+      nextQuestionId.value += 1
+    }
 
-    const id = nextQuestionId.value
-    nextQuestionId.value += 1
     const name = `${radius.toString() + units.toString()} Radar (${id.toString()})`
 
     const q: Question = {
@@ -121,9 +139,18 @@ export const useGameStore = defineStore('game', () => {
       exclusivePolygon: undefined,
       cumulativePolygon: undefined,
     }
-    questions.value.push(q)
 
-    moveTimelineMarkerToEnd()
+    if (newRadar) {
+      questions.value.push(q)
+      moveTimelineMarkerToEnd()
+    }
+    else {
+      const qIndex = questions.value.findIndex((que) => {
+        return que.id === id
+      })
+      questions.value[qIndex] = q
+    }
+
     drawGameArea()
   }
 
@@ -301,5 +328,7 @@ export const useGameStore = defineStore('game', () => {
     gameArea,
     state,
     removeQuestion,
+    setQuestionToEdit,
+    questionBeingEdited,
   }
 })
