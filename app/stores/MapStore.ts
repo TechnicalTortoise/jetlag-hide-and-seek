@@ -75,6 +75,9 @@ export const useMapStore = defineStore('map', () => {
     if (map === undefined) {
       return
     }
+    if (map.getSource(q.mapLayerId) === undefined) {
+      addQuestionSource(q)
+    }
     if (map.getLayer(q.mapLayerId) === undefined) {
       addQuestionLayer(q)
     }
@@ -133,7 +136,6 @@ export const useMapStore = defineStore('map', () => {
   }
 
   function calculatePolygons(questions: Question[]) {
-    console.warn('questions length = ', questions.length)
     const fullWorld: GeoJsonProperties = {
       type: 'Feature',
       geometry: {
@@ -177,7 +179,6 @@ export const useMapStore = defineStore('map', () => {
   }
 
   function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff') {
-    console.warn('Adding marker ', id)
     const map = getMap()
     const m = new Marker({ draggable, color }).setLngLat(lnglat).addTo(map)
     if (draggable && dragCallback !== undefined) {

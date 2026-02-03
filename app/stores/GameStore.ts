@@ -86,7 +86,6 @@ export const useGameStore = defineStore('game', () => {
       }
       else {
         mapStore.drawQuestion(q)
-        console.warn('Drawing q', q.timelineText)
       }
     }
   }
@@ -148,7 +147,8 @@ export const useGameStore = defineStore('game', () => {
       const qIndex = questions.value.findIndex((que) => {
         return que.id === id
       })
-      questions.value[qIndex] = q
+      removeQuestion(id)
+      questions.value.splice(qIndex, 0, q)
     }
 
     drawGameArea()
@@ -201,7 +201,6 @@ export const useGameStore = defineStore('game', () => {
     }
 
     if (intersectPoints.length !== 2) {
-      console.warn('intersectPoints should be 2 long!', intersectPoints)
       return undefined
     }
 
@@ -233,9 +232,7 @@ export const useGameStore = defineStore('game', () => {
       const toMidPoint = [midPoint[0] - center.geometry.coordinates[0], midPoint[1] - center.geometry.coordinates[1]]
       const direction: [number, number] = [(lnglatEnd[0] - lnglatStart[0]), (lnglatEnd[1] - lnglatStart[1])]
       const dotProduct: number = (toMidPoint[0] * direction[0]) + (toMidPoint[1] * direction[1])
-      console.warn(dotProduct)
       if ((warmer && dotProduct < 0) || (!warmer && dotProduct > 0)) {
-        console.warn('returning polygon ', i)
         return p
       }
     }
@@ -285,7 +282,6 @@ export const useGameStore = defineStore('game', () => {
   }
 
   watch(mapLoaded, () => {
-    console.warn('map loaded watcher says ', mapLoaded.value)
     if (mapLoaded.value) {
       addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
       addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
@@ -303,7 +299,6 @@ export const useGameStore = defineStore('game', () => {
   })
 
   watch(mapInstance, () => {
-    console.warn('Map instance watcher running')
     if (mapInstance.value === undefined) {
       console.warn('Map instance undefined')
     }
