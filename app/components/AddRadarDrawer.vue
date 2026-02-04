@@ -21,7 +21,9 @@ const addButtonEnabled = ref(true) // todo how to set this with a computed funct
 
 watch(state, () => {
   if (state.value !== State.ADDING_RADAR && state.value !== State.MODIFYING_RADAR) {
-    reset()
+    nextTick(() => {
+      reset()
+    })
   }
 })
 
@@ -149,4 +151,19 @@ function deleteRadar() {
   </UDrawer>
 </template>
 
-<style></style>
+<style scoped>
+:deep([data-state="open"][data-direction="top"]) {
+  top: 0 !important;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+</style>

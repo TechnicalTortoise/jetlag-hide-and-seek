@@ -24,7 +24,7 @@ export interface Radar {
   hit: boolean
 }
 
-interface Thermometer {
+export interface Thermometer {
   lnglatStart: [number, number]
   lnglatEnd: [number, number]
   warmer: boolean
@@ -245,17 +245,59 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function createThermometerPolygon2(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
-    const midPoint: [number, number] = turf.midpoint(lnglatStart, lnglatEnd)
+    const features = turf.featureCollection([turf.point(lnglatStart), turf.point(lnglatEnd)])
+    const bbox = turf.bbox(features)
+
+    const paddingKm = 10
+
+    const kmToDegrees = (km: number) => {
+      return km / 111 // lazy method for now, should be fine if not at the poles
+    }
+
+    const paddingDegrees = kmToDegrees(paddingKm)
+    const bboxPolygon = turf.bboxPolygon([
+      bbox[0] - paddingDegrees,
+      bbox[1] - paddingDegrees,
+      bbox[2] + paddingDegrees,
+      bbox[3] + paddingDegrees,
+    ])
+    const cellSizeKm = 5.0
+    const cellSizeDegrees = kmToDegrees(cellSizeKm)
+    const grid = turf.pointGrid(turf.bbox(bboxPolygon), cellSizeDegrees)
+
+    const point1Features = []
+    const point2Features = []
+
+    grid.features.forEach((gridPoint) => {
+      const dist1 = turf.distance(gridPoint, lnglatStart)
+      const dist2 = turf.distance(gridPoint, lnglatEnd)
+
+      if (dist1 < dist2) {
+        point1Features.push(gridPoint)
+      }
+      else {
+        point2Features.push(gridPoint)
+      }
+    })
+    if (warmer) {
+      return turf.convex(turf.featureCollection(point2Features))
+    }
+    else {
+      return turf.convex(turf.featureCollection(point1Features))
+    }
   }
 
-  function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+  function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean, id: number = -1) {
     const thermometer: Thermometer = { lnglatStart, lnglatEnd, warmer }
     // const entirePolygon: GeoJsonProperties = c
 
-    const poly = createThermometerPolygon(lnglatStart, lnglatEnd, warmer)
+    const poly = createThermometerPolygon2(lnglatStart, lnglatEnd, warmer)
     const d: number = distance(lnglatStart, lnglatEnd, 'kilometers')
-    const id = nextQuestionId.value
-    nextQuestionId.value += 1
+    const newThermometer = id === -1
+    if (newThermometer) {
+      id = nextQuestionId.value
+      nextQuestionId.value += 1
+    }
     const name = `${d.toFixed(2)} km thermometer${id.toString()}`
     const timelineText = `${d.toFixed(2)} km thermo`
     const q: Question = {
@@ -268,8 +310,19 @@ export const useGameStore = defineStore('game', () => {
       exclusivePolygon: undefined,
       cumulativePolygon: undefined,
     }
-    questions.value.push(q)
-    moveTimelineMarkerToEnd()
+
+    if (newThermometer) {
+      questions.value.push(q)
+      moveTimelineMarkerToEnd()
+    }
+    else {
+      const qIndex = questions.value.findIndex((que) => {
+        return que.id === id
+      })
+      removeQuestion(id)
+      questions.value.splice(qIndex, 0, q)
+    }
+
     drawGameArea()
   }
 
@@ -283,12 +336,12 @@ export const useGameStore = defineStore('game', () => {
 
   watch(mapLoaded, () => {
     if (mapLoaded.value) {
-      addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
-      addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
+      // addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
+      // addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
       // addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
       addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
 
-      addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], true)
+      // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], true)
 
       // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
       // addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)

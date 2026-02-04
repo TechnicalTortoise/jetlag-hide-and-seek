@@ -16,15 +16,15 @@ function onClick() {
   }
   switch (q.type) {
     case 'Radar':
-    {
-      gameStore.state = State.MODIFYING_RADAR
-      break
-    }
+      {
+        gameStore.state = State.MODIFYING_RADAR
+        break
+      }
     case 'Thermometer':
-    {
-      gameStore.state = State.MODIFYING_THERMOMETER
-      break
-    }
+      {
+        gameStore.state = State.MODIFYING_THERMOMETER
+        break
+      }
   }
   // gameStore.removeQuestion(props.id)
 }

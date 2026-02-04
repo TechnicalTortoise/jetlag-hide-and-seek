@@ -20,7 +20,6 @@ const items = ref<DropdownMenuItem[][]>([[
 
 function bleebus() {
   // gameStore.addingRadar = !gameStore.addingRadar
-  console.warn('state is ', state.value)
 }
 
 const mapStore = useMapStore()

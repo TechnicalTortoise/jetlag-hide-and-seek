@@ -17,7 +17,6 @@ const mapInstance = useMap()
 defineExpose({ mapInstance })
 
 function onMapLoaded() {
-  console.warn('map is loaded')
   mapStore.onMapLoaded()
   mapLoaded.value = true
 }

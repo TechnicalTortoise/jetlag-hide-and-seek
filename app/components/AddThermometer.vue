@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
+import type { Thermometer } from '~/stores/GameStore'
 import { distance } from '@turf/turf'
 import { State, useGameStore } from '~/stores/GameStore'
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { state } = storeToRefs(gameStore)
+const { state, questionBeingEdited } = storeToRefs(gameStore)
 const warmer = ref(false)
 const markerId0 = 'NewThermometerMarker0'
 const markerId1 = 'NewThermometerMarker1'
@@ -21,12 +22,39 @@ let lnglat1: [number, number] | undefined
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
 
 const isActive = computed(() => {
-  return state.value === State.ADDING_THERMOMENTER
+  return state.value === State.ADDING_THERMOMENTER || state.value === State.MODIFYING_THERMOMETER
+})
+
+const isModifying = computed(() => {
+  return state.value === State.MODIFYING_THERMOMETER
 })
 
 watch(state, () => {
-  if (state.value !== State.ADDING_THERMOMENTER) {
-    reset()
+  if (state.value !== State.ADDING_THERMOMENTER && state.value !== State.MODIFYING_THERMOMETER) {
+    nextTick(() => {
+      reset()
+    })
+  }
+})
+
+watch(questionBeingEdited, () => {
+  if (state.value === State.MODIFYING_THERMOMETER) {
+    const q = gameStore.questionBeingEdited
+    if (q === undefined) {
+      return
+    }
+    if (q.type === undefined || q.type !== 'Thermometer') {
+      return
+    }
+    const t: Thermometer = q.question
+    lnglat0 = t.lnglatStart
+    lnglat1 = t.lnglatEnd
+    warmer.value = t.warmer
+    mapStore.addMarker(markerId0, lnglat0, true, onDrag0)
+    mapStore.addMarker(markerId1, lnglat1, true, onDrag1, '#fa143e') // todo get colors from somewhere proper
+    marker0Exists = true
+    marker1Exists = true
+    setPositionStringToDistance()
   }
 })
 
@@ -79,8 +107,8 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function close() {
-  state.value = State.MAIN
   reset()
+  state.value = State.MAIN
 }
 
 function reset() {
@@ -99,20 +127,32 @@ function reset() {
   positionString.value = defaultPositionString
 }
 
-function add() {
-  console.warn(lnglat0, lnglat1)
+function addOrEdit() {
   if (lnglat0 === undefined || lnglat1 === undefined) {
     return
   }
-  gameStore.addThermometer(lnglat0, lnglat1, warmer.value)
+  if (isModifying.value) {
+    gameStore.addThermometer(lnglat0, lnglat1, warmer.value, gameStore.questionBeingEdited?.id)
+  }
+  else {
+    gameStore.addThermometer(lnglat0, lnglat1, warmer.value)
+  }
+
   close()
+}
+
+function deleteThermometer() {
+  if (questionBeingEdited.value !== undefined) {
+    gameStore.removeQuestion(questionBeingEdited.value.id)
+    close()
+  }
 }
 </script>
 
 <template>
   <UDrawer
     :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
-    :ui="{ container: 'max-w-xl mx-auto' }" title="New Thermometer"
+    :ui="{ container: 'max-w-xl mx-auto' }" :title="isModifying ? 'Modifying Thermometer' : 'Adding Thermometer'"
   >
     <template #body>
       {{ positionString }}
@@ -121,7 +161,12 @@ function add() {
     </template>
 
     <template #footer>
-      <UButton label="Add" color="neutral" class="justify-center" :disabled="!addButtonEnabled" @click="add" />
+      <UButton
+        :label="isModifying ? 'Update' : 'Add'" color="primary" class="justify-center"
+        :disabled="!addButtonEnabled" @click="addOrEdit"
+      />
+      <UButton v-if="isModifying" label="Delete" color="error" class="justify-center" @click="deleteThermometer" />
+
       <UButton label="Cancel" color="neutral" variant="outline" class="justify-center" @click="close" />
     </template>
   </UDrawer>
