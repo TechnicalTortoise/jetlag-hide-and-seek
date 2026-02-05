@@ -56,25 +56,55 @@ function toggleMeasuring() {
       class="fixed pointer-events-none right-4 bottom-4 space-y-4 transition-all duration-300"
       :style="{ bottom: show ? `${slideHeight + 16}px` : '16px' }"
     >
-      <MapOverlayButton text="🧭" class="pointer-events-auto" @click="mapStore.resetOrientation()" />
-      <UDropdownMenu :items="items" :content="{ side: 'left' }">
-        <MapOverlayButton text="+" class="pointer-events-auto" />
+      <MapOverlayButton
+        text="🧭"
+        class="pointer-events-auto"
+        @click="mapStore.resetOrientation()"
+      />
+      <UDropdownMenu
+        :items="items"
+        :content="{ side: 'left' }"
+      >
+        <MapOverlayButton
+          text="+"
+          class="pointer-events-auto"
+        />
       </UDropdownMenu>
       <MapOverlayButton
-        text="📐" class="pointer-events-auto" @click="
+        text="📐"
+        class="pointer-events-auto"
+        @click="
           toggleMeasuring()
         "
       />
-      <MapOverlayButton text="🦉" class="pointer-events-auto" @click="toggleShow()" />
+      <MapOverlayButton
+        text="🦉"
+        class="pointer-events-auto"
+        @click="toggleShow()"
+      />
     </div>
-    <Transition name="slide" @enter="measureHeight">
+    <Transition
+      name="slide"
+      @enter="measureHeight"
+    >
       <div
-        v-show="show" ref="el"
+        v-show="show"
+        ref="el"
         class="fixed w-screen bg-accented pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0 bottom-0"
       >
-        <div v-for="question in questions" :key="question.id">
-          <TimelineItem v-if="question.id > -1" :id="question.id" :text="question.timelineText" />
-          <div v-else class="w-8 h-24 bg-red-400 handle" />
+        <div
+          v-for="question in questions"
+          :key="question.id"
+        >
+          <TimelineItem
+            v-if="question.id > -1"
+            :id="question.id"
+            :text="question.timelineText"
+          />
+          <div
+            v-else
+            class="w-8 h-24 bg-red-400 handle"
+          />
         </div>
       </div>
     </Transition>

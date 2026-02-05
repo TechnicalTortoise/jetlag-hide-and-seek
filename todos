@@ -1,0 +1,12 @@
+-Make class/template for adding/modfiying a question, as its mostly shared functionality
+-Move polygon creation to mapStore
+-Add preview for radars/thermometers when adding and editing
+-Add ability to make/remove pins
+-Add ability to import shapefiles and do region questions
+-Make timeline into a drawer as well for consistency
+-Make excluded area look like the show with the hatch pattern
+-Options menu:
+    -Show location
+    -Show satellite map or street map
+
+-State persistance, especially important for going on a metro

@@ -122,31 +122,62 @@ function deleteRadar() {
 
 <template>
   <UDrawer
-    :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
-    :ui="{ container: 'max-w-xl mx-auto' }" :title="isModifying ? 'Modifying Radar' : 'Adding Radar'"
+    :open="isActive"
+    :handle="false"
+    :overlay="false"
+    :modal="false"
+    :dismissible="false"
+    direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }"
+    :title="isModifying ? 'Modifying Radar' : 'Adding Radar'"
   >
     <template #body>
       {{ positionString }}
       <br>
       Radius:
       <UInputNumber
-        v-model="radiusKm" :format-options="{
+        v-model="radiusKm"
+        :format-options="{
           minimumFractionDigits: 1,
           style: 'unit',
           unit: 'kilometer',
-        }" :step-snapping="false" :increment="true" :decrement="true" :min="0"
+        }"
+        :step-snapping="false"
+        :increment="true"
+        :decrement="true"
+        :min="0"
       />
 
-      <UCheckbox v-model="hit" label="Hit" indicator="end" class="w-min" />
+      <UCheckbox
+        v-model="hit"
+        label="Hit"
+        indicator="end"
+        class="w-min"
+      />
     </template>
 
     <template #footer>
       <UButton
-        :label="isModifying ? 'Update' : 'Add'" color="primary" class="justify-center"
-        :disabled="!addButtonEnabled" @click="addOrEdit"
+        :label="isModifying ? 'Update' : 'Add'"
+        color="primary"
+        class="justify-center"
+        :disabled="!addButtonEnabled"
+        @click="addOrEdit"
       />
-      <UButton v-if="isModifying" label="Delete" color="error" class="justify-center" @click="deleteRadar" />
-      <UButton label="Cancel" color="neutral" variant="outline" class="justify-center" @click="close" />
+      <UButton
+        v-if="isModifying"
+        label="Delete"
+        color="error"
+        class="justify-center"
+        @click="deleteRadar"
+      />
+      <UButton
+        label="Cancel"
+        color="neutral"
+        variant="outline"
+        class="justify-center"
+        @click="close"
+      />
     </template>
   </UDrawer>
 </template>
