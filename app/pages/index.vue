@@ -17,7 +17,6 @@ const map = useTemplateRef('map')
     </div>
 
     <RadarEditor />
-    <!-- <AddRadarDrawer /> -->
-    <!-- <AddThermometer /> -->
+    <ThermometerEditor />
   </div>
 </template>

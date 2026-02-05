@@ -5,7 +5,7 @@ import TopDrawer from './TopDrawer.vue'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { state, questionBeingEdited } = storeToRefs(gameStore)
+const { questionBeingEdited } = storeToRefs(gameStore)
 
 const radiusKm = ref(0)
 const hit = ref(false)
@@ -38,7 +38,6 @@ function setBodyText() {
   }
   const precision = 5
   positionString.value = `${lnglat[1].toFixed(precision)},${lnglat[0].toFixed(precision)}`
-  console.warn('set bt to ', positionString.value)
 }
 
 function onMarkerDrag() {
@@ -47,7 +46,6 @@ function onMarkerDrag() {
 }
 
 function onMapClick(e: MapMouseEvent) {
-  console.warn(active.value)
   if (!active.value) {
     return
   }
