@@ -1,8 +1,6 @@
 <script lang="ts" setup>
 import type { DropdownMenuItem } from '@nuxt/ui'
-import { chatPromptSubmit } from '#build/ui'
 import {
-  moveArrayElement,
   useSortable,
 } from '@vueuse/integrations/useSortable'
 import { State, useGameStore } from '~/stores/GameStore'
@@ -15,7 +13,7 @@ const items = ref<DropdownMenuItem[][]>([[
   { label: 'Radar', type: 'link', onSelect: () => { state.value = State.ADDING_RADAR } },
   { label: 'Thermometer', type: 'link', onSelect: () => { state.value = State.ADDING_THERMOMENTER } },
   { label: 'Region - custom?', type: 'link', onSelect: bleebus },
-  { label: 'Pin', type: 'link' },
+  { label: 'Pin', type: 'link', onSelect: () => { state.value = State.ADDING_PIN } },
 ]])
 
 function bleebus() {
@@ -56,6 +54,7 @@ function toggleMeasuring() {
       class="fixed pointer-events-none right-4 bottom-4 space-y-4 transition-all duration-300"
       :style="{ bottom: show ? `${slideHeight + 16}px` : '16px' }"
     >
+      <OptionsMenu />
       <MapOverlayButton
         text="🧭"
         class="pointer-events-auto"
@@ -66,7 +65,7 @@ function toggleMeasuring() {
         :content="{ side: 'left' }"
       >
         <MapOverlayButton
-          text="+"
+          text="➕"
           class="pointer-events-auto"
         />
       </UDropdownMenu>

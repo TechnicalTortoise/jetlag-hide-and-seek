@@ -1,7 +1,7 @@
 import type { MapInstance } from '@indoorequal/vue-maplibre-gl'
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties, Point } from 'geojson'
-import type { Color, type Feature, type MapMouseEvent } from 'maplibre-gl'
+import type { Color, type Feature, type MapMouseEvent, MarkerOptions, Popup } from 'maplibre-gl'
 // import { map } from '@indoorequal/vue-maplibre-gl'
 import { buffer, circle, difference, featureCollection, intersect, simplify, union } from '@turf/turf'
 import { Marker } from 'maplibre-gl'
@@ -178,8 +178,11 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff') {
+  function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff', clickCallback: () => void | undefined = undefined) {
     const map = getMap()
+    if (map === undefined) {
+      return
+    }
     const m = new Marker({ draggable, color }).setLngLat(lnglat).addTo(map)
     if (draggable && dragCallback !== undefined) {
       m.on('drag', () => {
@@ -187,7 +190,19 @@ export const useMapStore = defineStore('map', () => {
       })
     }
 
+    if (clickCallback !== undefined) {
+      m.getElement().addEventListener('click', (e) => {
+        clickCallback()
+        e.stopImmediatePropagation()
+        // tood not working
+      })
+    }
+
     markers[id] = m
+  }
+
+  function moveMarker(id: string, lnglat: [number, number]) {
+    markers[id]?.setLngLat(lnglat)
   }
 
   function removeMarker(id: string) {
@@ -209,5 +224,5 @@ export const useMapStore = defineStore('map', () => {
     map.setPitch(0)
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry, removeQuestionSource, removeQuestionLayer }
+  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry, removeQuestionSource, removeQuestionLayer, moveMarker }
 })

@@ -1,4 +1,3 @@
--Make class/template for adding/modfiying a question, as its mostly shared functionality
 -Move polygon creation to mapStore
 -Add preview for radars/thermometers when adding and editing
 -Add ability to make/remove pins
@@ -10,3 +9,5 @@
     -Show satellite map or street map
 
 -State persistance, especially important for going on a metro
+
+- custom icons for everything

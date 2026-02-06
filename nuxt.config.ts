@@ -22,4 +22,9 @@ export default defineNuxtConfig({
       },
     },
   },
+
+  devServer: {
+    https: true, // Auto-generates certificate
+    host: '0.0.0.0',
+  },
 })

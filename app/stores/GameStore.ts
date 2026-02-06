@@ -39,8 +39,10 @@ export enum State {
   ADDING_THERMOMENTER,
   MODIFYING_THERMOMETER,
   ADDING_CUSTOM_REGION,
-  EDITING_CUSTOM_REGION,
+  MODIFYING_CUSTOM_REGION,
   ADDING_PIN,
+  MODIFYING_PIN,
+  NULL,
 }
 
 export const useGameStore = defineStore('game', () => {
