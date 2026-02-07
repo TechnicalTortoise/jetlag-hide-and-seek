@@ -9,17 +9,6 @@ import { useMapStore } from '~/stores/MapStore'
 const gameStore = useGameStore()
 const { state } = storeToRefs(gameStore)
 
-const items = ref<DropdownMenuItem[][]>([[
-  { label: 'Radar', type: 'link', onSelect: () => { state.value = State.ADDING_RADAR } },
-  { label: 'Thermometer', type: 'link', onSelect: () => { state.value = State.ADDING_THERMOMENTER } },
-  { label: 'Region - custom?', type: 'link', onSelect: bleebus },
-  { label: 'Pin', type: 'link', onSelect: () => { state.value = State.ADDING_PIN } },
-]])
-
-function bleebus() {
-  // gameStore.addingRadar = !gameStore.addingRadar
-}
-
 const mapStore = useMapStore()
 
 const el = useTemplateRef('el')
@@ -60,15 +49,7 @@ function toggleMeasuring() {
         class="pointer-events-auto"
         @click="mapStore.resetOrientation()"
       />
-      <UDropdownMenu
-        :items="items"
-        :content="{ side: 'left' }"
-      >
-        <MapOverlayButton
-          icon-name="material-symbols:add-2-rounded"
-          class="pointer-events-auto"
-        />
-      </UDropdownMenu>
+      <NewQuestionMenu />
       <MapOverlayButton
         icon-name="material-symbols:measuring-tape-outline"
         class="pointer-events-auto"
