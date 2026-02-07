@@ -42,7 +42,7 @@ function onClick() {
 </script>
 
 <template>
-  <div class="w-18 h-18 float-left flex items-center justify-center">
+  <div class="w-18 h-20 float-left flex items-center justify-center">
     <UButton
       class="w-16 h-16 justify-center flex-col items-center gap-0"
       @click="onClick"
