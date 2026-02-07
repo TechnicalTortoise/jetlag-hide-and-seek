@@ -6,6 +6,10 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
+  icon: {
+    collections: ['material-symbols'],
+  },
+
   css: ['~/assets/css/main.css'],
 
   routeRules: {
@@ -23,8 +27,9 @@ export default defineNuxtConfig({
     },
   },
 
-  devServer: {
-    https: true, // Auto-generates certificate
-    host: '0.0.0.0',
-  },
+  // devServer: {
+  //   https: true, // Auto-generates certificate
+  //   host: '0.0.0.0',
+  // },
+
 })

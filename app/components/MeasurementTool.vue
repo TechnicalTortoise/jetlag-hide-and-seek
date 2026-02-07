@@ -138,15 +138,27 @@ function close() {
 
 <template>
   <UDrawer
-    :open="isActive" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
-    :ui="{ container: 'max-w-xl mx-auto' }" title="Measurement Tool"
+    :open="isActive"
+    :handle="false"
+    :overlay="false"
+    :modal="false"
+    :dismissible="false"
+    direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }"
+    title="Measurement Tool"
   >
     <template #body>
       {{ text }}
     </template>
 
     <template #footer>
-      <UButton label="Close" color="neutral" variant="outline" class="justify-center" @click="close" />
+      <UButton
+        label="Close"
+        color="neutral"
+        variant="outline"
+        class="justify-center"
+        @click="close"
+      />
     </template>
   </UDrawer>
 </template>

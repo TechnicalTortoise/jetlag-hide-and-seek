@@ -56,7 +56,7 @@ function toggleMeasuring() {
     >
       <OptionsMenu />
       <MapOverlayButton
-        text="🧭"
+        icon-name="material-symbols:expand-circle-up-outline-rounded"
         class="pointer-events-auto"
         @click="mapStore.resetOrientation()"
       />
@@ -65,19 +65,19 @@ function toggleMeasuring() {
         :content="{ side: 'left' }"
       >
         <MapOverlayButton
-          text="➕"
+          icon-name="material-symbols:add-2-rounded"
           class="pointer-events-auto"
         />
       </UDropdownMenu>
       <MapOverlayButton
-        text="📐"
+        icon-name="material-symbols:measuring-tape-outline"
         class="pointer-events-auto"
         @click="
           toggleMeasuring()
         "
       />
       <MapOverlayButton
-        text="🦉"
+        icon-name="material-symbols:view-timeline-outline-rounded"
         class="pointer-events-auto"
         @click="toggleShow()"
       />

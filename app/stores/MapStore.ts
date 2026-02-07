@@ -70,6 +70,11 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
+  function createRadarPolygon(radius: number, units: Units, lnglat: [number, number], hit: boolean): GeoJsonProperties {
+    const c: GeoJsonProperties = circle(lnglat, radius, { steps: 64, units })
+    return hit ? c : invertGeometry(c)
+  }
+
   function drawQuestion(q: Question) {
     const map = getMap()
     if (map === undefined) {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Icon } from '@iconify/vue'
+
 const map = useTemplateRef('map')
 </script>
 
@@ -7,7 +9,6 @@ const map = useTemplateRef('map')
     <div class="absolute inset-0 ">
       <CustomMap ref="map" />
     </div>
-
     <div class="absolute inset-0 pointer-events-none z-20">
       <Timeline />
     </div>

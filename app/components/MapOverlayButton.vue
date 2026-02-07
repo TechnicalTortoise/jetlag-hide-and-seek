@@ -1,17 +1,16 @@
 <script lang="ts" setup>
-const props = defineProps<{
-  text: string
-}>()
+import { Icon } from '@iconify/vue'
 
-// function onButtonPress() {
-//   console.warn('awoo')
-// }
+const props = defineProps<{
+  iconName: string
+}>()
 </script>
 
 <template>
   <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100">
-    {{ props.text }}
+    <Icon :icon="props.iconName" />
   </UButton>
 </template>
 
+<!-- icon="i-material-symbols-measuring-tape-outline" -->
 <style></style>

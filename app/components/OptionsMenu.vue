@@ -86,7 +86,7 @@ const items = computed(() => [
     :content="{ side: 'left' }"
   >
     <MapOverlayButton
-      text="⚙️"
+      icon-name="material-symbols:settings-outline-rounded"
       class="pointer-events-auto"
     />
   </UDropdownMenu>

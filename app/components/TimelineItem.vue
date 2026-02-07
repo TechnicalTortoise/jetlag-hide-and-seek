@@ -16,23 +16,26 @@ function onClick() {
   }
   switch (q.type) {
     case 'Radar':
-      {
-        gameStore.state = State.MODIFYING_RADAR
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_RADAR
+      break
+    }
     case 'Thermometer':
-      {
-        gameStore.state = State.MODIFYING_THERMOMETER
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_THERMOMETER
+      break
+    }
   }
   // gameStore.removeQuestion(props.id)
 }
 </script>
 
 <template>
-  <div class="w-24 h-24 bg-black float-left flex items-center justify-center">
-    <UButton class="w-20 h-20 justify-center" @click="onClick">
+  <div class="w-24 h-24 float-left flex items-center justify-center">
+    <UButton
+      class="w-20 h-20 justify-center"
+      @click="onClick"
+    >
       {{ props.text }}
     </UButton>
   </div>

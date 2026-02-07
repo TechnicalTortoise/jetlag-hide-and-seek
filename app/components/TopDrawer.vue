@@ -75,7 +75,6 @@ function addOrEdit() {
   else {
     props.addFn()
   }
-
   close()
 }
 
@@ -135,17 +134,17 @@ const title = computed(() => {
 
 <style scoped>
 :deep([data-state="open"][data-direction="top"]) {
-    top: 0 !important;
-    animation: slideDown 0.2s ease-out;
+  top: 0 !important;
+  animation: slideDown 0.2s ease-out;
 }
 
 @keyframes slideDown {
-    from {
-        transform: translateY(-100%);
-    }
+  from {
+    transform: translateY(-100%);
+  }
 
-    to {
-        transform: translateY(0);
-    }
+  to {
+    transform: translateY(0);
+  }
 }
 </style>
