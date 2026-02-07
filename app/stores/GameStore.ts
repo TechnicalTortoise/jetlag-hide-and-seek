@@ -133,7 +133,7 @@ export const useGameStore = defineStore('game', () => {
     const q: Question = {
       question: radar,
       type: 'Radar',
-      timelineText: `${radius.toString()} km radar`,
+      timelineText: `${radius.toString()}km`,
       id,
       mapLayerId: name,
       fullPolygon: entirePolygon,
@@ -300,8 +300,8 @@ export const useGameStore = defineStore('game', () => {
       id = nextQuestionId.value
       nextQuestionId.value += 1
     }
-    const name = `${d.toFixed(2)} km thermometer${id.toString()}`
-    const timelineText = `${d.toFixed(2)} km thermo`
+    const name = `${d.toFixed(2)}Km thermometer${id.toString()}`
+    const timelineText = `${d.toFixed(2)}Km`
     const q: Question = {
       question: thermometer,
       type: 'Thermometer',

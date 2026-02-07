@@ -99,6 +99,7 @@ function toggleMeasuring() {
             v-if="question.id > -1"
             :id="question.id"
             :text="question.timelineText"
+            :type="question.type"
           />
           <div
             v-else

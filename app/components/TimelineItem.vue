@@ -1,12 +1,23 @@
 <script lang="ts" setup>
+import { Icon } from '@iconify/vue'
 import { State, useGameStore } from '~/stores/GameStore'
 
 const props = defineProps<{
   text: string
+  type: string
   id: number
 }>()
 
 const gameStore = useGameStore()
+
+const iconName = computed(() => {
+  if (props.type === 'Radar') {
+    return 'material-symbols:radar'
+  }
+  else {
+    return 'material-symbols:thermometer-outline'
+  }
+})
 
 function onClick() {
   gameStore.setQuestionToEdit(props.id)
@@ -31,12 +42,18 @@ function onClick() {
 </script>
 
 <template>
-  <div class="w-24 h-24 float-left flex items-center justify-center">
+  <div class="w-18 h-18 float-left flex items-center justify-center">
     <UButton
-      class="w-20 h-20 justify-center"
+      class="w-16 h-16 justify-center flex-col items-center gap-0"
       @click="onClick"
     >
-      {{ props.text }}
+      <Icon
+        :icon="iconName"
+        class="w-8 h-8"
+      />
+      <br>
+
+      <span class="text-s">{{ props.text }}</span>
     </UButton>
   </div>
 </template>
