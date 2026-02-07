@@ -106,6 +106,8 @@ function onStartEditing() {
   lnglat = r.lnglat
   hit.value = r.hit
   radiusKm.value = r.radius
+  mapStore.addMarker(markerId, lnglat, true, onMarkerDrag)
+  markerExists = true
   setBodyText()
 }
 </script>

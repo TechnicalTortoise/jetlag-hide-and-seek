@@ -14,9 +14,10 @@ const iconName = computed(() => {
   if (props.type === 'Radar') {
     return 'material-symbols:radar'
   }
-  else {
+  else if (props.type === 'Thermometer') {
     return 'material-symbols:thermometer-outline'
   }
+  return 'material-symbols:question-mark-rounded'
 })
 
 function onClick() {
