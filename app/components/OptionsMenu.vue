@@ -4,6 +4,7 @@ import {
 } from '@vueuse/core'
 import { Marker } from 'maplibre-gl'
 import { useMapStore } from '~/stores/MapStore'
+import { getRGB, hexToRGBA } from '~/utils'
 
 const mapStore = useMapStore()
 
@@ -18,7 +19,11 @@ function createMarker() {
   el.style.width = '20px'
   el.style.height = '20px'
   el.style.borderRadius = '50%'
-  el.style.backgroundColor = 'rgba(239, 66, 245, 0.6)'
+  const backgroundColor: [string, number] = ['secondary', 500]
+  el.style.backgroundColor = hexToRGBA(getRGB(backgroundColor), 0.5)
+  console.warn(el.style.backgroundColor)
+
+  // el.style.backgroundColor = 'rgba(239, 66, 245, 0.6)'
   el.style.border = '2px solid rgba(164, 47, 168, 0.6)'
   el.style.cursor = 'pointer'
 

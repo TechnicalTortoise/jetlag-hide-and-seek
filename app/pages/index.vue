@@ -22,5 +22,16 @@ const map = useTemplateRef('map')
     <PinEditor />
 
     <SideButtons />
+    <div class="z-20 absolute inset-0 pointer-events-auto">
+      <UButton icon="i-lucide-user" />
+      <UButton
+        icon="i-lucide-user"
+        label="Home"
+      />
+      <UButton
+        icon="i-lucide-user"
+        label="Home"
+      />
+    </div>
   </div>
 </template>

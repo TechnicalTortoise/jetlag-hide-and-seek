@@ -2,16 +2,12 @@
 -Add preview for radars/thermometers when adding and editing
 -Add ability to make/remove pins
 -Add ability to import shapefiles and do region questions
--Make timeline into a drawer as well for consistency
 -Make excluded area look like the show with the hatch pattern
 -Options menu:
     -Show location - get colour and marker looking better
     -Show satellite map or street map
 
 -State persistance, especially important for going on a metro
+consistent pin colouring
 
-- move adding menu to separate component
-- custom icons for everything
-
-icones
 pinia persistant state

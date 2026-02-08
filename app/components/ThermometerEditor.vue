@@ -2,7 +2,11 @@
 import type { MapMouseEvent } from 'maplibre-gl'
 import { distance } from '@turf/turf'
 import { useMapStore } from '~/stores/MapStore'
+import { getRGB } from '~/utils'
 import TopDrawer from './TopDrawer.vue'
+
+const pinColour0: [string, number] = ['secondary', 500]
+const pinColour1: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -72,7 +76,7 @@ function onMapClick(e: MapMouseEvent) {
     return
   }
   if (!marker0Exists) {
-    mapStore.addMarker(markerId0, e.lngLat.toArray(), true, onDrag0)
+    mapStore.addMarker(markerId0, e.lngLat.toArray(), true, onDrag0, getRGB(pinColour0))
     lnglat0 = e.lngLat.toArray()
     marker0Exists = true
     positionString.value = 'Select second point on map'
@@ -81,7 +85,7 @@ function onMapClick(e: MapMouseEvent) {
   if (marker1Exists) {
     mapStore.removeMarker(markerId1)
   }
-  mapStore.addMarker(markerId1, e.lngLat.toArray(), true, onDrag1, '#fa143e') // todo get colors from somewhere proper
+  mapStore.addMarker(markerId1, e.lngLat.toArray(), true, onDrag1, getRGB(pinColour1))
   lnglat1 = e.lngLat.toArray()
   marker1Exists = true
   setBodyText()
@@ -128,8 +132,8 @@ function onStartEditing() {
   lnglat0 = t.lnglatStart
   lnglat1 = t.lnglatEnd
   warmer.value = t.warmer
-  mapStore.addMarker(markerId0, lnglat0, true, onDrag0)
-  mapStore.addMarker(markerId1, lnglat1, true, onDrag1, '#fa143e') // todo get colors from somewhere proper
+  mapStore.addMarker(markerId0, lnglat0, true, onDrag0, getRGB(pinColour0))
+  mapStore.addMarker(markerId1, lnglat1, true, onDrag1, getRGB(pinColour1))
   marker0Exists = true
   marker1Exists = true
 

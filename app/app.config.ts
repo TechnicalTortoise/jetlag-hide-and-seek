@@ -3,7 +3,8 @@ export default defineAppConfig({
     colors: {
       primary: 'green',
       neutral: 'stone',
-      secondary: 'pink',
+      secondary: 'cyan',
+      tertiary: 'red',
     },
   },
 })

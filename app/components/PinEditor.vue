@@ -1,40 +1,31 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
-import { Popup } from 'maplibre-gl'
+import appConfig from '~/app.config'
 import { useMapStore } from '~/stores/MapStore'
-import TopDrawer from './TopDrawer.vue'
+
+import { getRGB } from '~/utils'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { questionBeingEdited } = storeToRefs(gameStore)
-const bodyText = ref('placeholder')
-
-interface Pin {
-  lnglat: [number, number]
-  color: string
-  id: string
-}
 
 let pinCount: number = 0
+const pinColour: [string, number] = ['accent', 500]
 
-let pins: Pin[] = []
-
-const topDrawerRef = ref<InstanceType<typeof TopDrawer>>()
 const active = computed(() => {
-  return topDrawerRef.value?.isActive
+  return gameStore.state === State.ADDING_PINS
 })
-
-function resetFn() {
-
-}
-
-function setBodyText() {
-
-}
 
 function onMarkerDrag() {
 
 }
+
+watch(mapStore, () => {
+  console.warn(getRGB(pinColour))
+  if (mapStore.mapLoaded) {
+    const map = mapStore.getMap()
+    map.on('click', onMapClick)
+  }
+})
 
 function onMapClick(e: MapMouseEvent) {
   if (!active.value) {
@@ -42,53 +33,38 @@ function onMapClick(e: MapMouseEvent) {
   }
 
   const id = `CustomPin${pinCount}`
-  const color = '#00FF00'
-  mapStore.addMarker(id, e.lngLat.toArray(), true, onMarkerDrag, color, () => {
+
+  mapStore.addMarker(id, e.lngLat.toArray(), true, onMarkerDrag, getRGB(pinColour), () => {
     mapStore.removeMarker(id)
   })
-}
-
-function add() {
-  close()
-}
-
-function edit() {
-  close()
-}
-
-function allInfoFilled(): boolean {
-  return true
-}
-
-function onStartAdding() {
-  resetFn()
-}
-
-function onStartEditing() {
-  setBodyText()
+  pinCount += 1
 }
 </script>
 
 <template>
-  <TopDrawer
-    ref="topDrawerRef"
-    name="Placeholder"
-    :adding-state="State.ADDING_PIN"
-    :modifying-state="State.NULL"
-    :reset-fn="resetFn"
-    :body-text="bodyText"
-    :on-map-click-fn="onMapClick"
-    :delete-fn="() => { }"
-    :add-fn="add"
-    :edit-fn="edit"
-    :all-info-filled-fn="allInfoFilled"
-    :on-start-adding="onStartAdding"
-    :on-start-editing="onStartEditing"
+  <UDrawer
+    :open="active"
+    :handle="false"
+    :overlay="false"
+    :modal="false"
+    :dismissible="false"
+    direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }"
+    title="Adding Pins"
   >
-    <template #MainContentSlot>
-      placeholder text
+    <template #body>
+      Pins can be dragged, or clicked to be deleted
     </template>
-  </TopDrawer>
+    <template #footer>
+      <UButton
+        label="Close"
+        color="neutral"
+        variant="outline"
+        class="justify-center"
+        @click="gameStore.state = State.MAIN"
+      />
+    </template>
+  </UDrawer>
 </template>
 
 <style></style>

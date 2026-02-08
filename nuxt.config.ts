@@ -6,10 +6,6 @@ export default defineNuxtConfig({
     enabled: true,
   },
 
-  icon: {
-    collections: ['material-symbols'],
-  },
-
   css: ['~/assets/css/main.css'],
 
   routeRules: {
