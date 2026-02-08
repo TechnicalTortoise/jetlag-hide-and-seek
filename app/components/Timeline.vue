@@ -21,7 +21,7 @@ useSortable(el, questions, {
     <div
       v-show="gameStore.timelineShowing"
       ref="el"
-      class="fixed w-screen h-20 bg-default pointer-events-auto flex flex-nowrap overflow-x-scroll shrink-0 bottom-0 z-50  items-center gap-0 rounded-t-lg "
+      class="fixed w-screen h-20 bg-default pointer-events-auto flex flex-nowrap overflow-x-auto shrink-0 bottom-0 z-50  items-center gap-0 rounded-t-lg overflow-y-hidden"
     >
       <div
         v-for="question in questions"

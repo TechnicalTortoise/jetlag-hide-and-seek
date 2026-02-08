@@ -7,9 +7,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100">
-    <Icon :icon="props.iconName" />
-  </UButton>
+  <UButton
+    class="text-4xl w-12 h-12 flex justify-center items-center z-100"
+    :icon="props.iconName"
+  />
 </template>
 
 <!-- icon="i-material-symbols-measuring-tape-outline" -->
