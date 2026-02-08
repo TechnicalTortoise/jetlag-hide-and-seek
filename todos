@@ -1,5 +1,6 @@
 -Move polygon creation to mapStore
 -Add preview for radars/thermometers when adding and editing
+- Questions should be added to timeline with missing info, can then be previewed properly
 -Add ability to make/remove pins
 -Add ability to import shapefiles and do region questions
 -Make excluded area look like the show with the hatch pattern

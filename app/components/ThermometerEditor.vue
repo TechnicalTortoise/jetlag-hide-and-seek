@@ -18,8 +18,6 @@ const markerId0 = 'NewThermometerMarker0'
 const markerId1 = 'NewThermometerMarker1'
 let marker0Exists: boolean = false
 let marker1Exists: boolean = false
-const defaultPositionString = 'Select first position on map'
-const positionString = ref(defaultPositionString)
 let lnglat0: [number, number] | undefined
 let lnglat1: [number, number] | undefined
 
@@ -31,17 +29,17 @@ const active = computed(() => {
 function resetFn() {
   if (marker0Exists) {
     mapStore.removeMarker(markerId0)
-    marker0Exists = false
   }
   if (marker1Exists) {
     mapStore.removeMarker(markerId1)
-    marker1Exists = false
   }
+  marker0Exists = false
+  marker1Exists = false
 
   warmer.value = false
   lnglat0 = undefined
   lnglat1 = undefined
-  positionString.value = defaultPositionString
+  setBodyText()
 }
 
 function setBodyText() {
@@ -79,7 +77,7 @@ function onMapClick(e: MapMouseEvent) {
     mapStore.addMarker(markerId0, e.lngLat.toArray(), true, onDrag0, getRGB(pinColour0))
     lnglat0 = e.lngLat.toArray()
     marker0Exists = true
-    positionString.value = 'Select second point on map'
+    setBodyText()
     return
   }
   if (marker1Exists) {

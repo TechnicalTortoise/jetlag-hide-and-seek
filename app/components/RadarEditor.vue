@@ -116,19 +116,42 @@ function onStartEditing() {
 </script>
 
 <template>
-  <TopDrawer ref="topDrawerRef" name="Radar" :adding-state="State.ADDING_RADAR" :modifying-state="State.MODIFYING_RADAR"
-    :reset-fn="resetFn" :body-text="positionString" :on-map-click-fn="onMapClick" :delete-fn="deleteRadar" :add-fn="add"
-    :edit-fn="edit" :all-info-filled-fn="allInfoFilled" :on-start-adding="onStartAdding"
-    :on-start-editing="onStartEditing">
+  <TopDrawer
+    ref="topDrawerRef"
+    name="Radar"
+    :adding-state="State.ADDING_RADAR"
+    :modifying-state="State.MODIFYING_RADAR"
+    :reset-fn="resetFn"
+    :body-text="positionString"
+    :on-map-click-fn="onMapClick"
+    :delete-fn="deleteRadar"
+    :add-fn="add"
+    :edit-fn="edit"
+    :all-info-filled-fn="allInfoFilled"
+    :on-start-adding="onStartAdding"
+    :on-start-editing="onStartEditing"
+  >
     <template #MainContentSlot>
       Radius:
-      <UInputNumber v-model="radiusKm" :format-options="{
-        minimumFractionDigits: 1,
-        style: 'unit',
-        unit: 'kilometer',
-      }" :step-snapping="false" :increment="true" :decrement="true" :min="0" />
+      <UInputNumber
+        v-model="radiusKm"
+        :format-options="{
+          minimumFractionDigits: 1,
+          style: 'unit',
+          unit: 'kilometer',
+        }"
+        :step-snapping="false"
+        :increment="true"
+        :decrement="true"
+        :min="0"
+      />
 
-      <UCheckbox v-model="hit" label="Hit" indicator="end" class="w-min" />
+      <UCheckbox
+        v-model="hit"
+        label="Hit"
+        indicator="end"
+        class="w-min"
+      />
     </template>
   </TopDrawer>
 </template>

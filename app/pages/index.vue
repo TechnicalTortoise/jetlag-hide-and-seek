@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Icon } from '@iconify/vue'
+import CustomPolygonEditor from '~/components/CustomPolygonEditor.vue'
 
 const map = useTemplateRef('map')
 </script>
@@ -20,6 +21,7 @@ const map = useTemplateRef('map')
     <RadarEditor />
     <ThermometerEditor />
     <PinEditor />
+    <CustomPolygonEditor />
 
     <SideButtons />
   </div>

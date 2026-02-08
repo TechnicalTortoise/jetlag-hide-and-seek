@@ -51,6 +51,5 @@ useSortable(el, questions, {
 .slide-enter-from,
 .slide-leave-to {
   transform: translateY(100%);
-  /* how to remove scroll bar which temporarily appears? */
 }
 </style>

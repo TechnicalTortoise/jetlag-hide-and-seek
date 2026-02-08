@@ -7,7 +7,7 @@ import { useMapStore } from '~/stores/MapStore'
 
 // type guards
 export interface Question {
-  type: 'Radar' | 'TimelineMarker' | 'Thermometer'
+  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomPolygon'
   question: Radar | undefined | Thermometer
   timelineText: string
   id: number
@@ -28,6 +28,11 @@ export interface Thermometer {
   lnglatStart: [number, number]
   lnglatEnd: [number, number]
   warmer: boolean
+}
+
+export interface CustomPolygon {
+  points: [number, number][]
+  inside: boolean
 }
 
 export enum State {

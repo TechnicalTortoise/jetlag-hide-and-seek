@@ -22,7 +22,7 @@ const items = ref<DropdownMenuItem[][]>([[
     label: 'Custom Region',
     type: 'link',
     icon: 'i-material-symbols:polyline-outline-rounded',
-    onSelect: () => { },
+    onSelect: () => { state.value = State.ADDING_CUSTOM_REGION },
   },
   {
     label: 'Pin',
