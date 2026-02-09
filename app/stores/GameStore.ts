@@ -1,4 +1,4 @@
-import type { GeoJsonProperties } from 'geojson'
+import type { FeatureCollection, GeoJsonProperties, MultiPolygon } from 'geojson'
 import * as turf from '@turf/turf'
 import { useMapStore } from '~/stores/MapStore'
 
@@ -217,50 +217,42 @@ export const useGameStore = defineStore('game', () => {
       return
     }
     const t: Thermometer = q.question
-    q.polygon = createThermometerPolygon2(t.lnglatStart, t.lnglatEnd, t.warmer)
+    if (t === undefined || t.lnglatStart === undefined || t.lnglatEnd === undefined || t.warmer === undefined) {
+      return
+    }
+    q.polygon = createThermometerPolygon(t.lnglatStart, t.lnglatEnd, t.warmer)
   }
 
-  function createThermometerPolygon2(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
-    const features = turf.featureCollection([turf.point(lnglatStart), turf.point(lnglatEnd)])
-    const bbox = turf.bbox(features)
-
-    const paddingKm = 10
-
-    const kmToDegrees = (km: number) => {
-      return km / 111 // lazy method for now, should be fine if not at the poles
+  function createThermometerPolygon(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+    const bearing = turf.bearing(lnglatStart, lnglatEnd)
+    const perpBearing = (bearing + 90) % 360
+    const midPoint = turf.midpoint(lnglatStart, lnglatEnd)
+    const dist = 10
+    const p0 = turf.destination(midPoint, dist, perpBearing, { units: 'kilometers' }).geometry.coordinates
+    const p1 = turf.destination(midPoint, -dist, perpBearing, { units: 'kilometers' }).geometry.coordinates
+    const line = turf.lineString([p0, p1])
+    const cutter = turf.buffer(line, 0.1, { units: 'meters' })
+    const circleToSplit = turf.circle(midPoint, dist / 2, { units: 'kilometers', steps: 64 })
+    const polygons: MultiPolygon = turf.difference(turf.featureCollection([circleToSplit, cutter]))
+    const geometry = polygons.geometry.coordinates
+    if (geometry.length !== 2) {
+      console.warn('Expect 2 polygons!')
+      return undefined
     }
 
-    const paddingDegrees = kmToDegrees(paddingKm)
-    const bboxPolygon = turf.bboxPolygon([
-      bbox[0] - paddingDegrees,
-      bbox[1] - paddingDegrees,
-      bbox[2] + paddingDegrees,
-      bbox[3] + paddingDegrees,
-    ])
-    const cellSizeKm = 5.0
-    const cellSizeDegrees = kmToDegrees(cellSizeKm)
-    const grid = turf.pointGrid(turf.bbox(bboxPolygon), cellSizeDegrees)
-
-    const point1Features = []
-    const point2Features = []
-
-    grid.features.forEach((gridPoint) => {
-      const dist1 = turf.distance(gridPoint, lnglatStart)
-      const dist2 = turf.distance(gridPoint, lnglatEnd)
-
-      if (dist1 < dist2) {
-        point1Features.push(gridPoint)
-      }
-      else {
-        point2Features.push(gridPoint)
-      }
-    })
+    const polygon0 = turf.polygon(geometry[0])
+    const polygon1 = turf.polygon(geometry[1])
+    const centroid0 = turf.centroid(polygon0)
+    const centroid1 = turf.centroid(polygon1)
+    const d0 = turf.distance(centroid0, lnglatStart)
+    const d1 = turf.distance(centroid1, lnglatStart)
     if (warmer) {
-      return turf.convex(turf.featureCollection(point2Features))
+      return d0 > d1 ? polygon0 : polygon1
     }
     else {
-      return turf.convex(turf.featureCollection(point1Features))
+      return d0 < d1 ? polygon0 : polygon1
     }
+    return undefined
   }
 
   function moveTimelineMarkerToEnd() {

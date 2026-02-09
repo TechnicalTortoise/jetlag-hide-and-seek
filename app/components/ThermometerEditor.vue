@@ -170,12 +170,29 @@ function onCancel() {
 </script>
 
 <template>
-  <TopDrawer ref="topDrawerRef" name="Thermometer" :adding-state="State.ADDING_THERMOMENTER"
-    :modifying-state="State.MODIFYING_THERMOMETER" :reset-fn="resetFn" :body-text="bodyText"
-    :on-map-click-fn="onMapClick" :delete-fn="deleteQ" :add-fn="add" :edit-fn="edit" :all-info-filled-fn="allInfoFilled"
-    :on-start-adding="onStartAdding" :on-start-editing="onStartEditing" :on-cancel-fn="onCancel">
+  <TopDrawer
+    ref="topDrawerRef"
+    name="Thermometer"
+    :adding-state="State.ADDING_THERMOMENTER"
+    :modifying-state="State.MODIFYING_THERMOMETER"
+    :reset-fn="resetFn"
+    :body-text="bodyText"
+    :on-map-click-fn="onMapClick"
+    :delete-fn="deleteQ"
+    :add-fn="add"
+    :edit-fn="edit"
+    :all-info-filled-fn="allInfoFilled"
+    :on-start-adding="onStartAdding"
+    :on-start-editing="onStartEditing"
+    :on-cancel-fn="onCancel"
+  >
     <template #MainContentSlot>
-      <UCheckbox v-model="warmer" label="Warmer" indicator="end" class="w-min" />
+      <UCheckbox
+        v-model="warmer"
+        label="Warmer"
+        indicator="end"
+        class="w-min"
+      />
     </template>
   </TopDrawer>
 </template>
