@@ -1,9 +1,7 @@
 import type { MapInstance } from '@indoorequal/vue-maplibre-gl'
 import type { Units } from '@turf/turf'
 import type { GeoJsonProperties, Point } from 'geojson'
-import type { Color, type Feature, type MapMouseEvent, MarkerOptions, Popup } from 'maplibre-gl'
-// import { map } from '@indoorequal/vue-maplibre-gl'
-import { buffer, circle, difference, featureCollection, intersect, simplify, union } from '@turf/turf'
+import type { Color, type Feature, type MapMouseEvent, MarkerOptions, Popup, Source, StyleLayer } from 'maplibre-gl'
 import { Marker } from 'maplibre-gl'
 import { defineStore } from 'pinia'
 
@@ -11,8 +9,6 @@ export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
   const markers: { [id: string]: Marker } = []
-
-  let colorIndex: number = 0
 
   async function onMapLoaded() {
     const map = getMap()
@@ -70,116 +66,50 @@ export const useMapStore = defineStore('map', () => {
     }
   }
 
-  function createRadarPolygon(radius: number, units: Units, lnglat: [number, number], hit: boolean): GeoJsonProperties {
-    const c: GeoJsonProperties = circle(lnglat, radius, { steps: 64, units })
-    return hit ? c : invertGeometry(c)
+  function removeGamePolygon() {
+    const map = getMap()
+    const sourceId = 'GamePolygonSource'
+    const layerId = 'GamePolygonLayer'
+    const layer: StyleLayer | undefined = map.getLayer(layerId)
+    if (layer !== undefined) {
+      map.removeLayer(layerId)
+    }
+    const source: Source | undefined = map.getSource(sourceId)
+    if (source !== undefined) {
+      map.removeSource(sourceId)
+    }
   }
 
-  function drawQuestion(q: Question) {
-    const map = getMap()
-    if (map === undefined) {
+  function drawGamePolygon(polygon: GeoJsonProperties | undefined) {
+    if (polygon === undefined) {
+      removeGamePolygon()
       return
     }
-    if (map.getSource(q.mapLayerId) === undefined) {
-      addQuestionSource(q)
-    }
-    if (map.getLayer(q.mapLayerId) === undefined) {
-      addQuestionLayer(q)
-    }
-  }
 
-  function hideQuestion(q: Question) {
+    const sourceId = 'GamePolygonSource'
+    const layerId = 'GamePolygonLayer'
     const map = getMap()
-    if (map === undefined) {
-      return
-    }
-    if (map.getLayer(q.mapLayerId) !== undefined) {
-      removeQuestionLayer(q)
-    }
-  }
-
-  function addQuestionSource(q: Question) {
-    const map = getMap()
-    let source = map.getSource(q.mapLayerId)
+    const source: Source | undefined = map.getSource(sourceId)
     if (source === undefined) {
-      map.addSource(q.mapLayerId, { type: 'geojson', data: q.cumulativePolygon })
-      return
+      map.addSource(sourceId, { type: 'geojson', data: polygon })
     }
-    source.setData(q.cumulativePolygon)
-  }
-
-  function removeQuestionSource(q: Question) {
-    const map = getMap()
-    map.removeSource(q.mapLayerId)
-  }
-
-  function addQuestionLayer(q: Question) {
-    const map = getMap()
-    // const colors = ['#000000', '#00FF00', '#FF0000', '#0000FF', '#FFFF00', '#FF00FF']
-    const colors = ['#000050']
-
-    colorIndex = (q.id) % colors.length
-    map.addLayer({
-      id: q.mapLayerId,
-      type:
-        'fill',
-      source: q.mapLayerId,
-      paint: {
-        'fill-color': colors[colorIndex],
-        'fill-opacity': 0.5,
-        // 'fill-pattern': 'hatch-pattern',
-
-      },
-    })
-  }
-
-  function removeQuestionLayer(q: Question) {
-    const map = getMap()
-    if (map.getLayer(q.mapLayerId)) {
-      map.removeLayer(q.mapLayerId)
+    else {
+      source.setData(polygon)
     }
-  }
 
-  function calculatePolygons(questions: Question[]) {
-    const fullWorld: GeoJsonProperties = {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          // Outer ring - covers the world
-          [
-            [-180, -90],
-            [180, -90],
-            [180, 90],
-            [-180, 90],
-            [-180, -90],
-          ],
-        ],
-      },
-    }
-    let currentRemainingArea: GeoJsonProperties = fullWorld
-    let cumulativePolygon: GeoJsonProperties | undefined
-    for (let i = 0; i < questions.length; i += 1) {
-      const q: Question | undefined = questions[i]
-      if (q === undefined) {
-        continue
-      }
-
-      if (q.fullPolygon === undefined) {
-        continue
-      }
-
-      // q.exclusivePolygon = difference(featureCollection([currentRemainingArea, q.fullPolygon]))
-      // currentRemainingArea = difference(featureCollection([currentRemainingArea, q.exclusivePolygon]))
-
-      if (cumulativePolygon === undefined) {
-        cumulativePolygon = invertGeometry(q.fullPolygon)
-      }
-      else {
-        cumulativePolygon = union(featureCollection([cumulativePolygon, invertGeometry(q.fullPolygon)]))
-      }
-      q.cumulativePolygon = cumulativePolygon
-      addQuestionSource(q)
+    const layer: StyleLayer | undefined = map.getLayer(layerId)
+    // todo, add outline and hatch
+    if (layer === undefined) {
+      map.addLayer({
+        id: layerId,
+        type:
+          'fill',
+        source: sourceId,
+        paint: {
+          'fill-color': '#000050',
+          'fill-opacity': 0.5,
+        },
+      })
     }
   }
 
@@ -229,5 +159,19 @@ export const useMapStore = defineStore('map', () => {
     map.setPitch(0)
   }
 
-  return { mapInstance, mapLoaded, getMap, setMapInstance, calculatePolygons, drawQuestion, hideQuestion, onMapLoaded, addMarker, removeMarker, getMarker, setBearing, resetOrientation, invertGeometry, removeQuestionSource, removeQuestionLayer, moveMarker }
+  return {
+    mapInstance,
+    mapLoaded,
+    getMap,
+    setMapInstance,
+    onMapLoaded,
+    addMarker,
+    removeMarker,
+    getMarker,
+    setBearing,
+    resetOrientation,
+    invertGeometry,
+    moveMarker,
+    drawGamePolygon,
+  }
 })

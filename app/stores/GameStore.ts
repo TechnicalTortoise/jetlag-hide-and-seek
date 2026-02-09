@@ -1,27 +1,21 @@
-import type { Units } from '@turf/turf'
-import type { FeatureCollection, GeoJsonProperties } from 'geojson'
-import { buffer, centroid, circle, difference, distance, featureCollection, flatten, lineString } from '@turf/turf'
+import type { GeoJsonProperties } from 'geojson'
 import * as turf from '@turf/turf'
-import { isQuestionOrPlusOrMinusToken } from 'typescript'
 import { useMapStore } from '~/stores/MapStore'
 
 // type guards
 export interface Question {
   type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomPolygon'
   question: Radar | undefined | Thermometer
+  allInfoAvailable: boolean
   timelineText: string
   id: number
-  mapLayerId: string
-  fullPolygon: GeoJsonProperties | undefined
-  exclusivePolygon: GeoJsonProperties | undefined
-  cumulativePolygon: GeoJsonProperties | undefined
+  polygon: GeoJsonProperties | undefined
 }
 
 export interface Radar {
-  radius: number
-  units: Units
-  lnglat: [number, number]
-  hit: boolean
+  radiusKm: number | undefined
+  lnglat: [number, number] | undefined
+  hit: boolean | undefined
 }
 
 export interface Thermometer {
@@ -55,8 +49,8 @@ export const useGameStore = defineStore('game', () => {
   const { mapInstance, mapLoaded } = storeToRefs(mapStore)
   const state = ref(State.MAIN)
   const nextQuestionId = ref(0)
-  const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
   const timelineShowing = ref(true)
+  const questionIdBeingEdited = ref(-1)
 
   const gameArea = {
     center: [-1.407516809729255, 50.94303107100244] as [number, number],
@@ -70,31 +64,53 @@ export const useGameStore = defineStore('game', () => {
     type: 'TimelineMarker',
     timelineText: '',
     id: -1,
-    mapLayerId: '',
-    fullPolygon: undefined,
-    exclusivePolygon: undefined,
-    cumulativePolygon: undefined,
+    polygon: undefined,
+    allInfoAvailable: true,
   })
 
-  const drawGameArea = () => {
-    mapStore.calculatePolygons(questions.value)
-    getTimelineMarkerIndex()
-    if (!mapStore.mapLoaded) {
-      return
+  function calculateTotalPolygon(): GeoJsonProperties | undefined {
+    const fullWorld: GeoJsonProperties = {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [-180, -90],
+            [180, -90],
+            [180, 90],
+            [-180, 90],
+            [-180, -90],
+          ],
+        ],
+      },
     }
+    let polygon: GeoJsonProperties | undefined
     for (let i = 0; i < questions.value.length; i += 1) {
-      const q: Question | undefined = questions.value[i]
+      const q = questions.value[i]
+      // console.warn('Applying polygon for question ', q.type, q.id)
       if (q === undefined) {
-        console.warn('Question undefined')
         continue
       }
-      if (i !== timelineMarkerIndex.value - 1) {
-        mapStore.hideQuestion(q)
+
+      if (q.type === 'TimelineMarker') {
+        break
+      }
+      if (q.polygon === undefined) {
+        continue
+      }
+      if (polygon === undefined) {
+        polygon = mapStore.invertGeometry(q.polygon)
       }
       else {
-        mapStore.drawQuestion(q)
+        polygon = turf.union(turf.featureCollection([polygon, mapStore.invertGeometry(q.polygon)]))
       }
     }
+    return polygon
+  }
+
+  function drawGameArea() {
+    const p = calculateTotalPolygon()
+    mapStore.drawGamePolygon(p)
   }
 
   function removeQuestion(id: number) {
@@ -104,151 +120,102 @@ export const useGameStore = defineStore('game', () => {
     if (index === -1) {
       return
     }
-    mapStore.removeQuestionLayer(questions.value[index])
-    // mapStore.removeQuestionSource(questions.value[index])
     questions.value.splice(index, 1)
+    onNewQuestionData()
+  }
+
+  function onNewQuestionData() {
     drawGameArea()
   }
 
-  function setQuestionToEdit(id: number) {
-    const index = questions.value.findIndex((q) => {
-      return id === q.id
-    })
-    if (index === -1) {
-      questionBeingEdited.value = undefined
+  function addRadar(): Question {
+    const r: Radar = {
+      hit: undefined,
+      lnglat: undefined,
+      radiusKm: undefined,
     }
-    else {
-      questionBeingEdited.value = questions.value[index]
-    }
-  }
-
-  function addRadar(radius: number, units: Units, lnglat: [number, number], hit: boolean, id: number = -1) {
-    // if radar already exists, then just modify
-    const radar: Radar = { radius, units, lnglat, hit }
-    const c: GeoJsonProperties = circle(lnglat, radius, { steps: 64, units })
-    const entirePolygon: GeoJsonProperties = hit ? c : mapStore.invertGeometry(c)
-    const newRadar = id === -1
-    if (newRadar) {
-      id = nextQuestionId.value
-      nextQuestionId.value += 1
-    }
-
-    const name = `${radius.toString() + units.toString()} Radar (${id.toString()})`
-
     const q: Question = {
-      question: radar,
       type: 'Radar',
-      timelineText: `${radius.toString()}km`,
-      id,
-      mapLayerId: name,
-      fullPolygon: entirePolygon,
-      exclusivePolygon: undefined,
-      cumulativePolygon: undefined,
+      id: nextQuestionId.value,
+      question: r,
+      polygon: undefined,
+      timelineText: '',
+      allInfoAvailable: false,
     }
-
-    if (newRadar) {
-      questions.value.push(q)
-      moveTimelineMarkerToEnd()
-    }
-    else {
-      const qIndex = questions.value.findIndex((que) => {
-        return que.id === id
-      })
-      removeQuestion(id)
-      questions.value.splice(qIndex, 0, q)
-    }
-
-    drawGameArea()
+    questions.value.push(q)
+    nextQuestionId.value += 1
+    moveTimelineMarkerToEnd()
+    onNewQuestionData()
+    return q
   }
 
-  function createThermometerPolygon(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
-    // x is longitude
-    // y is latitude
-
-    const theta: number = Math.atan2(lnglatEnd[1] - lnglatStart[1], lnglatEnd[0] - lnglatStart[0]) + (Math.PI / 2)
-    const midPoint: [number, number] = [(lnglatEnd[0] + lnglatStart[0]) / 2, (lnglatEnd[1] + lnglatStart[1]) / 2]
-    const d: number = (midPoint[1] * Math.cos(theta)) - (midPoint[0] * Math.sin(theta))
-    // line in form xSin(theta) - ycos(theta) + d = 0
-    // need to find the points where this intersects the world polygon and find the correct side based on warmer value
-
-    // todo this doesn't work when playing at extremes
-    const maxLat: number = 89
-    const maxLng: number = 179
-
-    const yFromX = (x: number) => {
-      return ((x * Math.sin(theta)) + d) / Math.cos(theta) // could be infity!
+  function updateRadar(q: Question, radiusKm: number, lnglat: [number, number], hit: boolean) {
+    if (q.type !== 'Radar') {
+      return
     }
-    const xFromY = (y: number) => {
-      return ((y * Math.cos(theta)) - d) / Math.sin(theta) // could be infity!
+    q.timelineText = `${radiusKm.toFixed(2)}km`
+    console.warn(questions.value[questions.value.length - 2]?.timelineText)
+    const r: Radar = {
+      hit,
+      lnglat,
+      radiusKm,
     }
-    const xInBounds = (x: number) => {
-      return (x > -maxLng && x < maxLng)
-    }
-    const yInBounds = (y: number) => {
-      return (y > -maxLat && y < maxLat)
-    }
-    // test each extreme
-    const xTop = xFromY(maxLat)
-    const xBottom = xFromY(-maxLat)
-    const yLeft = yFromX(-maxLng)
-    const yRight = yFromX(maxLng)
+    q.allInfoAvailable = true
+    q.question = r
+    setRadarPolygon(q)
+    onNewQuestionData()
+  }
 
-    let intersectPoints = []
-    if (xInBounds(xTop)) {
-      intersectPoints.push([xTop, maxLat])
+  function setRadarPolygon(q: Question) {
+    if (q.type !== 'Radar') {
+      return
     }
-    if (xInBounds(xBottom)) {
-      intersectPoints.push([xBottom, -maxLat])
+    const r: Radar = q.question
+    const p: GeoJsonProperties = turf.circle(r.lnglat, r.radiusKm, { steps: 64, units: 'kilometers' })
+    q.polygon = r.hit ? p : mapStore.invertGeometry(p)
+  }
+
+  function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+    const t: Thermometer = {
+      lnglatStart,
+      lnglatEnd,
+      warmer,
     }
-    if (yInBounds(yLeft)) {
-      intersectPoints.push([-maxLng, yLeft])
+    const q: Question = {
+      type: 'Thermometer',
+      id: nextQuestionId.value,
+      question: t,
+      polygon: undefined,
+      timelineText: '',
     }
-    if (yInBounds(yRight)) {
-      intersectPoints.push([maxLng, yRight])
+    questions.value.push(q)
+    nextQuestionId.value += 1
+    updateThermometer(q, lnglatStart, lnglatEnd, warmer)
+    moveTimelineMarkerToEnd()
+    onNewQuestionData()
+  }
+
+  function updateThermometer(q: Question, lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+    if (q.type !== 'Thermometer') {
+      return
     }
-
-    if (intersectPoints.length !== 2) {
-      return undefined
+    const d: number = turf.distance(lnglatStart, lnglatEnd, 'kilometers')
+    q.timelineText = `${d.toFixed(2)}km`
+    const t: Thermometer = {
+      lnglatStart,
+      lnglatEnd,
+      warmer,
     }
+    q.question = t
+    setThermometerPolygon(q)
+  }
 
-    // intersectPoints = [[-1.402679279203333, 50.795232238349364], [-1.4222032731419236, 51.112627915289245]]
-
-    const l = lineString(intersectPoints)
-    const bufferedLine = buffer(l, 1, { units: 'meters' })
-    // const worldPolygon
-    //   = {
-    //     type: 'Feature',
-    //     geometry: {
-    //       type: 'Polygon',
-    //       coordinates: [
-    //         [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
-    //       ],
-    //     },
-    //   }
-    // todo, can get the play area polygon
-    const worldPolygon: GeoJsonProperties = circle(lnglatStart, 10, { steps: 256, units: 'kilometers' })
-
-    const splittedPolygon = difference(featureCollection([worldPolygon, bufferedLine]))
-    const flattenedPolygons: FeatureCollection = flatten(splittedPolygon)
-
-    // one of the polygones will be in the direction between start and end, one not
-    for (let i = 0; i < flattenedPolygons.features.length; i += 1) {
-      const p = flattenedPolygons.features[i]
-      const center = centroid(p)
-      // console.warn(center)
-      const toMidPoint = [midPoint[0] - center.geometry.coordinates[0], midPoint[1] - center.geometry.coordinates[1]]
-      const direction: [number, number] = [(lnglatEnd[0] - lnglatStart[0]), (lnglatEnd[1] - lnglatStart[1])]
-      const dotProduct: number = (toMidPoint[0] * direction[0]) + (toMidPoint[1] * direction[1])
-      if ((warmer && dotProduct < 0) || (!warmer && dotProduct > 0)) {
-        return p
-      }
+  function setThermometerPolygon(q: Question) {
+    if (q.type !== 'Thermometer') {
+      return
     }
-
-    // console.warn(flattenedPolygons)
-    // const map = mapStore.getMap()
-    // map
-    console.warn('somethings gone wrong!')
-    return undefined
+    const t: Thermometer = q.question
+    q.polygon = createThermometerPolygon2(t.lnglatStart, t.lnglatEnd, t.warmer)
   }
 
   function createThermometerPolygon2(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
@@ -294,45 +261,6 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
-  function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean, id: number = -1) {
-    const thermometer: Thermometer = { lnglatStart, lnglatEnd, warmer }
-    // const entirePolygon: GeoJsonProperties = c
-
-    const poly = createThermometerPolygon2(lnglatStart, lnglatEnd, warmer)
-    const d: number = distance(lnglatStart, lnglatEnd, 'kilometers')
-    const newThermometer = id === -1
-    if (newThermometer) {
-      id = nextQuestionId.value
-      nextQuestionId.value += 1
-    }
-    const name = `${d.toFixed(2)}Km thermometer${id.toString()}`
-    const timelineText = `${d.toFixed(2)}Km`
-    const q: Question = {
-      question: thermometer,
-      type: 'Thermometer',
-      timelineText,
-      id,
-      mapLayerId: name,
-      fullPolygon: poly,
-      exclusivePolygon: undefined,
-      cumulativePolygon: undefined,
-    }
-
-    if (newThermometer) {
-      questions.value.push(q)
-      moveTimelineMarkerToEnd()
-    }
-    else {
-      const qIndex = questions.value.findIndex((que) => {
-        return que.id === id
-      })
-      removeQuestion(id)
-      questions.value.splice(qIndex, 0, q)
-    }
-
-    drawGameArea()
-  }
-
   function moveTimelineMarkerToEnd() {
     getTimelineMarkerIndex()
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
@@ -341,20 +269,25 @@ export const useGameStore = defineStore('game', () => {
     getTimelineMarkerIndex()
   }
 
+  function getQuestionToEdit(id: number): Question | undefined {
+    questionIdBeingEdited.value = id
+    return questions.value.find((q) => {
+      return id === q.id
+    })
+  }
+
   watch(mapLoaded, () => {
     if (mapLoaded.value) {
-      addRadar(gameArea.radiusKm, 'kilometers', gameArea.center, true)
-      addRadar(6, 'kilometers', [-1.4432936229776763, 50.93119754191312], false)
-      // addRadar(2, 'kilometers', [-1.4432936229776763, 50.93119754191312], true)
-      addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+      const q0 = addRadar()
+      updateRadar(q0, gameArea.radiusKm, gameArea.center, true)
+      const q1 = addRadar()
+      updateRadar(q1, 2, [-1.4432936229776763, 50.93119754191312], true)
 
-      addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], true)
+      // addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+      // addRadar(2, [-1.3583492927662713, 50.94474366229376], true)
 
       // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
       // addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)
-
-      moveTimelineMarkerToEnd()
-      drawGameArea()
     }
   })
 
@@ -371,20 +304,25 @@ export const useGameStore = defineStore('game', () => {
   }
 
   watch(questions, () => {
-    getTimelineMarkerIndex()
-    drawGameArea()
+    // need this to watch when timeline marker is moved
+    if (mapStore.mapLoaded) {
+      onNewQuestionData()
+    }
   })
 
   return {
     questions,
+    onNewQuestionData,
     addRadar,
     addThermometer,
+    updateRadar,
+    updateThermometer,
     timelineMarkerIndex,
     gameArea,
     state,
     removeQuestion,
-    setQuestionToEdit,
-    questionBeingEdited,
+    getQuestionToEdit,
+    questionIdBeingEdited,
     timelineShowing,
   }
 })

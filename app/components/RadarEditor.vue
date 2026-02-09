@@ -8,15 +8,19 @@ const pinColour: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { questionBeingEdited } = storeToRefs(gameStore)
+const { questions } = storeToRefs(gameStore)
+let question: Question | undefined
 
 const radiusKm = ref(0)
 const hit = ref(false)
+let lnglat: [number, number] | undefined
+
+let questionCopy: Question | undefined
+
 const markerId = 'NewRadarMarker'
 const defaultPositionString = 'Select position on map'
 const positionString = ref(defaultPositionString)
 let markerExists: boolean = false // todo reset everything on open drawer
-let lnglat: [number, number] | undefined
 
 const topDrawerRef = ref<InstanceType<typeof TopDrawer>>()
 const active = computed(() => {
@@ -24,6 +28,7 @@ const active = computed(() => {
 })
 
 function resetFn() {
+  question = undefined
   lnglat = undefined
   setBodyText()
   if (markerExists) {
@@ -45,6 +50,7 @@ function setBodyText() {
 
 function onMarkerDrag() {
   lnglat = mapStore.getMarker(markerId).getLngLat().toArray()
+  gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
   setBodyText()
 }
 
@@ -53,6 +59,7 @@ function onMapClick(e: MapMouseEvent) {
     return
   }
   lnglat = e.lngLat.toArray()
+  gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
   if (markerExists) {
     mapStore.removeMarker(markerId)
   }
@@ -62,27 +69,22 @@ function onMapClick(e: MapMouseEvent) {
 }
 
 function deleteRadar() {
-  if (questionBeingEdited.value !== undefined) {
-    gameStore.removeQuestion(questionBeingEdited.value.id)
-    close()
+  if (question !== undefined) {
+    gameStore.removeQuestion(question.id)
   }
+  topDrawerRef.value?.closeFn()
 }
 
 function add() {
-  if (lnglat === undefined) {
-    return
-  }
-
-  gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value)
-  close()
+  topDrawerRef.value?.closeFn()
 }
 
 function edit() {
-  if (lnglat === undefined) {
-    return
-  }
-  gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value, gameStore.questionBeingEdited?.id)
-  close()
+  // if (lnglat === undefined) {
+  //   return
+  // }
+  // gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value, gameStore.questionBeingEdited?.id)
+  topDrawerRef.value?.closeFn()
 }
 
 function allInfoFilled(): boolean {
@@ -98,20 +100,52 @@ function allInfoFilled(): boolean {
 
 function onStartAdding() {
   resetFn()
+  question = gameStore.addRadar()
 }
 
 function onStartEditing() {
-  const q = gameStore.questionBeingEdited
-  if (q === undefined || q.type !== 'Radar') {
+  resetFn()
+  question = gameStore.getQuestionToEdit(gameStore.questionIdBeingEdited)
+  if (question === undefined || question.type !== 'Radar') {
     return
   }
-  const r: Radar = q.question
+
+  const r: Radar = question.question
   lnglat = r.lnglat
-  hit.value = r.hit
-  radiusKm.value = r.radius
-  mapStore.addMarker(markerId, lnglat, true, onMarkerDrag)
-  markerExists = true
+  if (r.hit !== undefined) {
+    hit.value = r.hit
+  }
+  if (r.radiusKm !== undefined) {
+    radiusKm.value = r.radiusKm
+  }
+  if (lnglat !== undefined) {
+    mapStore.addMarker(markerId, lnglat, true, onMarkerDrag)
+    markerExists = true
+  }
   setBodyText()
+}
+
+watch(hit, () => {
+  if (question !== undefined && lnglat !== undefined) {
+    gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
+  }
+})
+watch(radiusKm, () => {
+  if (question !== undefined && lnglat !== undefined) {
+    gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
+  }
+})
+
+function onCancel() {
+  if (gameStore.state === State.ADDING_RADAR) {
+    if (question !== undefined) {
+      gameStore.removeQuestion(question.id)
+    }
+  }
+  else if (gameStore.state === State.MODIFYING_RADAR) {
+    gameStore.onNewQuestionData()
+  }
+  topDrawerRef.value?.closeFn()
 }
 </script>
 
@@ -130,6 +164,7 @@ function onStartEditing() {
     :all-info-filled-fn="allInfoFilled"
     :on-start-adding="onStartAdding"
     :on-start-editing="onStartEditing"
+    :on-cancel-fn="onCancel"
   >
     <template #MainContentSlot>
       Radius:

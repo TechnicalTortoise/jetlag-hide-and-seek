@@ -16,6 +16,7 @@ const props = defineProps<{
   allInfoFilledFn: () => (boolean)
   onStartAdding: () => (void)
   onStartEditing: () => (void)
+  onCancelFn: () => (void)
 }>()
 
 const gameStore = useGameStore()
@@ -25,7 +26,7 @@ const addButtonEnabled = ref(true) // todo how to set this with a computed funct
 
 const { state } = storeToRefs(gameStore)
 
-function close() {
+function closeFn() {
   props.resetFn()
   state.value = State.MAIN
 }
@@ -41,6 +42,7 @@ const isModifying = computed(() => {
 defineExpose({
   isModifying,
   isActive,
+  closeFn,
 })
 
 watch(state, () => {
@@ -75,12 +77,12 @@ function addOrEdit() {
   else {
     props.addFn()
   }
-  close()
+  closeFn()
 }
 
 function deleteQ() {
   props.deleteFn()
-  close()
+  closeFn()
 }
 
 const title = computed(() => {
@@ -126,7 +128,7 @@ const title = computed(() => {
         color="neutral"
         variant="outline"
         class="justify-center"
-        @click="close"
+        @click="onCancelFn"
       />
     </template>
   </UDrawer>

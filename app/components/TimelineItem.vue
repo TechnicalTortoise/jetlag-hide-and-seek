@@ -21,8 +21,7 @@ const iconName = computed(() => {
 })
 
 function onClick() {
-  gameStore.setQuestionToEdit(props.id)
-  const q = gameStore.questionBeingEdited
+  const q = gameStore.getQuestionToEdit(props.id)
   if (q === undefined) {
     return
   }

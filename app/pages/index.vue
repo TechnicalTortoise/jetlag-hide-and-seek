@@ -19,9 +19,9 @@ const map = useTemplateRef('map')
     </div>
 
     <RadarEditor />
-    <ThermometerEditor />
-    <PinEditor />
-    <CustomPolygonEditor />
+    <!-- <ThermometerEditor /> -->
+    <!-- <PinEditor /> -->
+    <!-- <CustomPolygonEditor /> -->
 
     <SideButtons />
   </div>
