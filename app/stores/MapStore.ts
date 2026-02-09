@@ -8,12 +8,50 @@ import { defineStore } from 'pinia'
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
-  const markers: { [id: string]: Marker } = []
+  const markers: { [id: string]: Marker } = {}
+  const sourceId = 'GamePolygonSource'
+  const fillLayerId = 'GamePolygonLayerFill'
+  const outlineLayerId = 'GamePolygonLayerOutline'
+  const hatchLayerId = 'GamePolygonLayerHatch'
+  const hatchImageId = 'hatch-pattern'
+  const svgPatternSize = 20
+  const hatchStrokeWidth = 4
+  const hatchColour = '#2020BF'
+  // const svgData = `<svg width="${svgPatternSize}" height="${svgPatternSize}" xmlns="http://www.w3.org/2000/svg">
+  // <line x1="-5" y1="-5" x2="${svgPatternSize + 5}" y2="${svgPatternSize + 5}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
+  // <line x1="-5" y1="${svgPatternSize - 5}" x2="5" y2="${svgPatternSize + 5}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
+  // <line x1="${svgPatternSize - 5}" y1="-5" x2="${svgPatternSize + 5}" y2="5" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
+  // </svg>`
+
+  function generateHatchSVG() {
+    const w = 15
+    const h = 25
+    const ey = 10
+    const ex = ey / h * w
+
+    const mainLine = `<line x1="${-ex}" y1="${h + ey}" x2="${w + ex}" y2="${-ey}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />`
+    const extra1 = `<line x1="${ex}" y1="${-ey}" x2="${-ex}" y2="${ey}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />`
+    const extra2 = `<line x1="${w - ex}" y1="${h + ey}" x2="${w + ex}" y2="${h - ey}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />`
+    return `<svg width="${w}" height="${h}" xmlns="http://www.w3.org/2000/svg">
+      ${mainLine}
+      ${extra1}
+      ${extra2}
+      </svg>`
+  }
+
+  const svgDataUrl = `data:image/svg+xml,${encodeURIComponent(generateHatchSVG())}`
 
   async function onMapLoaded() {
     const map = getMap()
-    const image = await map.loadImage('hatch_pattern.png')
-    map.addImage('hatch-pattern', image.data)
+    const img = new Image()
+    await new Promise((resolve, reject) => {
+      img.onload = resolve
+      img.onerror = reject
+      img.src = svgDataUrl
+    })
+    console.error(generateHatchSVG())
+
+    map.addImage(hatchImageId, img)
   }
 
   function getMap() {
@@ -68,11 +106,18 @@ export const useMapStore = defineStore('map', () => {
 
   function removeGamePolygon() {
     const map = getMap()
-    const sourceId = 'GamePolygonSource'
-    const layerId = 'GamePolygonLayer'
-    const layer: StyleLayer | undefined = map.getLayer(layerId)
-    if (layer !== undefined) {
-      map.removeLayer(layerId)
+
+    const fillLayer: StyleLayer | undefined = map.getLayer(fillLayerId)
+    if (fillLayer !== undefined) {
+      map.removeLayer(fillLayerId)
+    }
+    const outlineLayer: StyleLayer | undefined = map.getLayer(outlineLayerId)
+    if (outlineLayer !== undefined) {
+      map.removeLayer(outlineLayerId)
+    }
+    const hatchLayer: StyleLayer | undefined = map.getLayer(hatchLayerId)
+    if (hatchLayer !== undefined) {
+      map.removeLayer(hatchLayerId)
     }
     const source: Source | undefined = map.getSource(sourceId)
     if (source !== undefined) {
@@ -85,9 +130,6 @@ export const useMapStore = defineStore('map', () => {
       removeGamePolygon()
       return
     }
-
-    const sourceId = 'GamePolygonSource'
-    const layerId = 'GamePolygonLayer'
     const map = getMap()
     const source: Source | undefined = map.getSource(sourceId)
     if (source === undefined) {
@@ -97,16 +139,42 @@ export const useMapStore = defineStore('map', () => {
       source.setData(polygon)
     }
 
-    const layer: StyleLayer | undefined = map.getLayer(layerId)
-    // todo, add outline and hatch
-    if (layer === undefined) {
+    const fillLayer: StyleLayer | undefined = map.getLayer(fillLayerId)
+    if (fillLayer === undefined) {
       map.addLayer({
-        id: layerId,
+        id: fillLayerId,
         type:
           'fill',
         source: sourceId,
         paint: {
-          'fill-color': '#000050',
+          'fill-color': '#000070',
+          'fill-opacity': 0.5,
+        },
+      })
+    }
+    const outlineLayer: StyleLayer | undefined = map.getLayer(outlineLayerId)
+    if (outlineLayer === undefined) {
+      map.addLayer({
+        id: outlineLayerId,
+        type:
+          'line',
+        source: sourceId,
+        paint: {
+          'line-color': '#2020BF',
+          'line-width': 2,
+          'line-opacity': 1,
+        },
+      })
+    }
+    const hatchLayer: StyleLayer | undefined = map.getLayer(hatchLayerId)
+    if (hatchLayer === undefined) {
+      map.addLayer({
+        id: hatchLayerId,
+        type:
+          'fill',
+        source: sourceId,
+        paint: {
+          'fill-pattern': hatchImageId,
           'fill-opacity': 0.5,
         },
       })
