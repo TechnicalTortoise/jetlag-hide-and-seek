@@ -19,9 +19,9 @@ export interface Radar {
 }
 
 export interface Thermometer {
-  lnglatStart: [number, number]
-  lnglatEnd: [number, number]
-  warmer: boolean
+  lnglatStart: [number, number] | undefined
+  lnglatEnd: [number, number] | undefined
+  warmer: boolean | undefined
 }
 
 export interface CustomPolygon {
@@ -175,11 +175,11 @@ export const useGameStore = defineStore('game', () => {
     q.polygon = r.hit ? p : mapStore.invertGeometry(p)
   }
 
-  function addThermometer(lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
+  function addThermometer(): Question {
     const t: Thermometer = {
-      lnglatStart,
-      lnglatEnd,
-      warmer,
+      lnglatStart: undefined,
+      lnglatEnd: undefined,
+      warmer: undefined,
     }
     const q: Question = {
       type: 'Thermometer',
@@ -187,12 +187,13 @@ export const useGameStore = defineStore('game', () => {
       question: t,
       polygon: undefined,
       timelineText: '',
+      allInfoAvailable: false,
     }
     questions.value.push(q)
     nextQuestionId.value += 1
-    updateThermometer(q, lnglatStart, lnglatEnd, warmer)
     moveTimelineMarkerToEnd()
     onNewQuestionData()
+    return q
   }
 
   function updateThermometer(q: Question, lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
@@ -208,6 +209,7 @@ export const useGameStore = defineStore('game', () => {
     }
     q.question = t
     setThermometerPolygon(q)
+    onNewQuestionData()
   }
 
   function setThermometerPolygon(q: Question) {
@@ -281,9 +283,11 @@ export const useGameStore = defineStore('game', () => {
       const q0 = addRadar()
       updateRadar(q0, gameArea.radiusKm, gameArea.center, true)
       const q1 = addRadar()
-      updateRadar(q1, 2, [-1.4432936229776763, 50.93119754191312], true)
+      updateRadar(q1, 4, [-1.4432936229776763, 50.93119754191312], true)
 
-      // addThermometer([-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+      const q2 = addThermometer()
+      updateThermometer(q2, [-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
+
       // addRadar(2, [-1.3583492927662713, 50.94474366229376], true)
 
       // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)

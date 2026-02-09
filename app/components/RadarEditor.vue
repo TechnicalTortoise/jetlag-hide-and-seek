@@ -8,14 +8,11 @@ const pinColour: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-const { questions } = storeToRefs(gameStore)
 let question: Question | undefined
 
 const radiusKm = ref(0)
 const hit = ref(false)
 let lnglat: [number, number] | undefined
-
-let questionCopy: Question | undefined
 
 const markerId = 'NewRadarMarker'
 const defaultPositionString = 'Select position on map'
