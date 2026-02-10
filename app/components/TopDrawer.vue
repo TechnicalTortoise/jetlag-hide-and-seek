@@ -29,6 +29,7 @@ const { state } = storeToRefs(gameStore)
 function closeFn() {
   props.resetFn()
   state.value = State.MAIN
+  gameStore.questionIdBeingEdited = -1
 }
 
 const isActive = computed(() => {

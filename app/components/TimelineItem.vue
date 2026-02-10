@@ -46,6 +46,7 @@ function onClick() {
     <UButton
       class="w-16 h-16 justify-center flex-col items-center gap-0"
       :icon="iconName"
+      :color="gameStore.questionIdBeingEdited === props.id ? 'secondary' : 'primary'"
       @click="onClick"
     >
       <span class="text-s">{{ props.text }}</span>

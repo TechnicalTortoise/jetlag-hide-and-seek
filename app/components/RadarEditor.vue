@@ -94,6 +94,7 @@ function allInfoFilled(): boolean {
 function onStartAdding() {
   resetFn()
   question = gameStore.addRadar()
+  gameStore.questionIdBeingEdited = question.id
 }
 
 function onStartEditing() {
