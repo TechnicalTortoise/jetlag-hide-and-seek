@@ -4,8 +4,8 @@ import type { MapMouseEvent } from 'maplibre-gl'
 import { map } from '@indoorequal/vue-maplibre-gl'
 import * as turf from '@turf/turf'
 import { Marker } from 'maplibre-gl'
+import { getRGB } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
-import { getRGB } from '~/utils'
 import TopDrawer from './TopDrawer.vue'
 
 const pinColour: [string, number] = ['tertiary', 500]
@@ -99,7 +99,6 @@ function onMapClick(e: MapMouseEvent) {
     return
   }
   newMarker(e.lngLat.toArray())
-
   setBodyText()
 }
 

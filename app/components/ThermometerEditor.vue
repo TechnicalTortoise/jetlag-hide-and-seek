@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
 import { distance } from '@turf/turf'
+import { getRGB } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
-import { getRGB } from '~/utils'
 import TopDrawer from './TopDrawer.vue'
 
 const pinColour0: [string, number] = ['secondary', 500]

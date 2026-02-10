@@ -139,14 +139,15 @@ export const useGameStore = defineStore('game', () => {
       id: nextQuestionId.value,
       question: r,
       polygon: undefined,
-      timelineText: '',
+      timelineText: 'New Radar',
       allInfoAvailable: false,
     }
     questions.value.push(q)
     nextQuestionId.value += 1
     moveTimelineMarkerToEnd()
     onNewQuestionData()
-    return q
+    // returning q does not work properly, but this does
+    return questions.value.at(-2)
   }
 
   function updateRadar(q: Question, radiusKm: number, lnglat: [number, number], hit: boolean) {
@@ -154,7 +155,7 @@ export const useGameStore = defineStore('game', () => {
       return
     }
     q.timelineText = `${radiusKm.toFixed(2)}km`
-    console.warn(questions.value[questions.value.length - 2]?.timelineText)
+    console.warn('setting timeline text to ', q.timelineText)
     const r: Radar = {
       hit,
       lnglat,
@@ -186,14 +187,14 @@ export const useGameStore = defineStore('game', () => {
       id: nextQuestionId.value,
       question: t,
       polygon: undefined,
-      timelineText: '',
+      timelineText: 'New Thermo.',
       allInfoAvailable: false,
     }
     questions.value.push(q)
     nextQuestionId.value += 1
     moveTimelineMarkerToEnd()
     onNewQuestionData()
-    return q
+    return questions.value.at(-2)
   }
 
   function updateThermometer(q: Question, lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {

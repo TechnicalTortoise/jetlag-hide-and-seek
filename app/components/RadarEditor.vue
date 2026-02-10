@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
+import { getRGB } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
-import { getRGB } from '~/utils'
 import TopDrawer from './TopDrawer.vue'
 
 const pinColour: [string, number] = ['tertiary', 500]
@@ -77,10 +77,6 @@ function add() {
 }
 
 function edit() {
-  // if (lnglat === undefined) {
-  //   return
-  // }
-  // gameStore.addRadar(radiusKm.value, 'kilometers', lnglat, hit.value, gameStore.questionBeingEdited?.id)
   topDrawerRef.value?.closeFn()
 }
 

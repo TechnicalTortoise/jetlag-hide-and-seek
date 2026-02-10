@@ -14,14 +14,8 @@ export const useMapStore = defineStore('map', () => {
   const outlineLayerId = 'GamePolygonLayerOutline'
   const hatchLayerId = 'GamePolygonLayerHatch'
   const hatchImageId = 'hatch-pattern'
-  const svgPatternSize = 20
   const hatchStrokeWidth = 4
   const hatchColour = '#2020BF'
-  // const svgData = `<svg width="${svgPatternSize}" height="${svgPatternSize}" xmlns="http://www.w3.org/2000/svg">
-  // <line x1="-5" y1="-5" x2="${svgPatternSize + 5}" y2="${svgPatternSize + 5}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
-  // <line x1="-5" y1="${svgPatternSize - 5}" x2="5" y2="${svgPatternSize + 5}" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
-  // <line x1="${svgPatternSize - 5}" y1="-5" x2="${svgPatternSize + 5}" y2="5" stroke="${hatchColour}" stroke-width="${hatchStrokeWidth}" />
-  // </svg>`
 
   function generateHatchSVG() {
     const w = 15
@@ -49,8 +43,6 @@ export const useMapStore = defineStore('map', () => {
       img.onerror = reject
       img.src = svgDataUrl
     })
-    console.error(generateHatchSVG())
-
     map.addImage(hatchImageId, img)
   }
 

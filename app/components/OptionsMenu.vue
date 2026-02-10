@@ -4,7 +4,7 @@ import {
 } from '@vueuse/core'
 import { Marker } from 'maplibre-gl'
 import { useMapStore } from '~/stores/MapStore'
-import { getRGB, hexToRGBA } from '~/utils'
+import { getRGB, hexToRGBA } from '~/colourUtils'
 
 const mapStore = useMapStore()
 

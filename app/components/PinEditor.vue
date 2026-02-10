@@ -3,7 +3,7 @@ import type { MapMouseEvent } from 'maplibre-gl'
 import appConfig from '~/app.config'
 import { useMapStore } from '~/stores/MapStore'
 
-import { getRGB } from '~/utils'
+import { getRGB } from '~/colourUtils'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
