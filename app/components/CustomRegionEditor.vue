@@ -101,7 +101,6 @@ function onStartAdding() {
 
 function onStartEditing() {
   resetFn()
-  console.warn('blub')
   question = gameStore.getQuestionToEdit(gameStore.questionIdBeingEdited)
   if (question === undefined || question.type !== 'CustomRegion') {
     return

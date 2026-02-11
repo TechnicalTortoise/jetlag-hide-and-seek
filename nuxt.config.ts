@@ -28,4 +28,11 @@ export default defineNuxtConfig({
     host: '0.0.0.0',
   },
 
+  runtimeConfig: {
+    public:
+    {
+      geoapifyApiKey: process.env.NUXT_PUBLIC_GEOAPIFY_API_KEY || '',
+    },
+  },
+
 })

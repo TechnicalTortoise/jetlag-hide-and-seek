@@ -10,8 +10,8 @@ pinia.use(piniaPluginPersistedstate)
 
 // type guards
 export interface Question {
-  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion'
-  question: Radar | undefined | Thermometer | CustomRegion
+  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion' | 'GameBoundary'
+  question: Radar | undefined | Thermometer | CustomRegion | GameBoundary
   allInfoAvailable: boolean
   timelineText: string
   id: number
@@ -35,8 +35,12 @@ export interface CustomRegion {
   inside: boolean
 }
 
+export interface GameBoundary {
+  points: [number, number][]
+  name: string
+}
+
 export enum State {
-  SELECTING_GAME_AREA,
   MAIN,
   MEASURING,
   ADDING_RADAR,
@@ -46,6 +50,7 @@ export enum State {
   ADDING_CUSTOM_REGION,
   MODIFYING_CUSTOM_REGION,
   ADDING_PINS,
+  SETTING_GAME_BOUNDARY,
   NULL,
 }
 
@@ -354,7 +359,7 @@ export const useGameStore = defineStore('game', () => {
       getTimelineMarkerIndex()
       // marker only
       if (questions.value.length === 1) {
-        console.warn('TODO new game menu to select area')
+        onNewGame()
       }
       onNewQuestionData()
     }
@@ -381,6 +386,10 @@ export const useGameStore = defineStore('game', () => {
     questions.value.splice(0, questions.value.length)
     addTimelineMarker()
     onNewQuestionData()
+  }
+
+  function onNewGame() {
+    state.value = State.SETTING_GAME_BOUNDARY
   }
 
   return {

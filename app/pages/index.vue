@@ -22,7 +22,7 @@ const map = useTemplateRef('map')
     <ThermometerEditor />
     <!-- <PinEditor /> -->
     <CustomRegionEditor />
-
+    <GameBoundarySelectionMenu />
     <SideButtons />
   </div>
 </template>
