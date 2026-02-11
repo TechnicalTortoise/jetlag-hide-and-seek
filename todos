@@ -1,4 +1,3 @@
--Thermometer too slow
 -When editing a question, should be able to cancel changes
 -Add ability to make/remove pins
 -Add ability to import shapefiles and do region questions
@@ -11,3 +10,6 @@
 consistent pin colouring
 
 pinia persistant state
+might need https for mobile
+chrome remote debugging
+define icons to use in a file somewhere

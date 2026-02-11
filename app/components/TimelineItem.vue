@@ -17,6 +17,9 @@ const iconName = computed(() => {
   else if (props.type === 'Thermometer') {
     return 'material-symbols:thermometer-outline'
   }
+  else if (props.type === 'CustomRegion') {
+    return 'i-material-symbols:polyline-outline-rounded'
+  }
   return 'material-symbols:question-mark-rounded'
 })
 
@@ -35,6 +38,15 @@ function onClick() {
     {
       gameStore.state = State.MODIFYING_THERMOMETER
       break
+    }
+    case 'CustomRegion':
+    {
+      gameStore.state = State.MODIFYING_CUSTOM_REGION
+      break
+    }
+    default:
+    {
+      console.warn(`Trying to modify question type ${q.type}, not yet handled`)
     }
   }
   // gameStore.removeQuestion(props.id)

@@ -10,8 +10,8 @@ pinia.use(piniaPluginPersistedstate)
 
 // type guards
 export interface Question {
-  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomPolygon'
-  question: Radar | undefined | Thermometer
+  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion'
+  question: Radar | undefined | Thermometer | CustomRegion
   allInfoAvailable: boolean
   timelineText: string
   id: number
@@ -30,7 +30,7 @@ export interface Thermometer {
   warmer: boolean | undefined
 }
 
-export interface CustomPolygon {
+export interface CustomRegion {
   points: [number, number][]
   inside: boolean
 }
@@ -52,7 +52,7 @@ export enum State {
 export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
-  const { mapInstance, mapLoaded } = storeToRefs(mapStore)
+  const { mapLoaded } = storeToRefs(mapStore)
   const state = ref(State.MAIN)
   const nextQuestionId = ref(0)
   const timelineShowing = ref(true)
@@ -263,6 +263,68 @@ export const useGameStore = defineStore('game', () => {
     return undefined
   }
 
+  function addCustomRegion(): Question {
+    const cr: CustomRegion = {
+      points: [],
+      inside: true,
+    }
+    const q: Question = {
+      type: 'CustomRegion',
+      id: nextQuestionId.value,
+      question: cr,
+      polygon: undefined,
+      timelineText: 'New Region',
+      allInfoAvailable: false,
+    }
+    questions.value.push(q)
+    nextQuestionId.value += 1
+    moveTimelineMarkerToEnd()
+    onNewQuestionData()
+    // returning q does not work properly, but this does
+    return questions.value.at(-2)
+  }
+
+  function updateCustomRegion(q: Question, points: [number, number][], inside: boolean) {
+    if (q.type !== 'CustomRegion') {
+      return
+    }
+    const cr: CustomRegion = {
+      points,
+      inside,
+    }
+    q.allInfoAvailable = true
+    q.question = cr
+    setCustomRegionPolygon(q)
+
+    let areaKm2 = 0
+    if (q.polygon) {
+      const p = inside ? q.polygon : mapStore.invertGeometry(q.polygon)
+      areaKm2 = turf.area(p) * 1e-6
+    }
+
+    q.timelineText = `${areaKm2.toFixed(2)}km²`
+
+    onNewQuestionData()
+  }
+
+  function setCustomRegionPolygon(q: Question) {
+    if (q.type !== 'CustomRegion') {
+      return
+    }
+    const cr: CustomRegion = q.question
+    if (cr.points.length < 3) {
+      q.polygon = undefined
+      return
+    }
+    const points: [number, number][] = []
+    cr.points.forEach((p) => {
+      points.push(p)
+    })
+    points.push(cr.points[0])
+    const p: GeoJsonProperties = turf.polygon([points])
+    q.polygon = cr.inside ? p : mapStore.invertGeometry(p)
+  }
+
   function moveTimelineMarkerToEnd() {
     getTimelineMarkerIndex()
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
@@ -290,13 +352,11 @@ export const useGameStore = defineStore('game', () => {
       // when the map loads (will always be slower than loading local questions storage)
       // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
       getTimelineMarkerIndex()
+      // marker only
+      if (questions.value.length === 1) {
+        console.warn('TODO new game menu to select area')
+      }
       onNewQuestionData()
-    }
-  })
-
-  watch(mapInstance, () => {
-    if (mapInstance.value === undefined) {
-      console.warn('Map instance undefined')
     }
   })
 
@@ -331,6 +391,8 @@ export const useGameStore = defineStore('game', () => {
     addThermometer,
     updateRadar,
     updateThermometer,
+    addCustomRegion,
+    updateCustomRegion,
     timelineMarkerIndex,
     gameArea,
     state,
