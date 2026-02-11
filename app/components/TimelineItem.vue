@@ -20,6 +20,9 @@ const iconName = computed(() => {
   else if (props.type === 'CustomRegion') {
     return 'i-material-symbols:polyline-outline-rounded'
   }
+  else if (props.type === 'GameBoundary') {
+    return 'i-material-symbols:globe'
+  }
   return 'material-symbols:question-mark-rounded'
 })
 
@@ -42,6 +45,11 @@ function onClick() {
     case 'CustomRegion':
     {
       gameStore.state = State.MODIFYING_CUSTOM_REGION
+      break
+    }
+    case 'GameBoundary':
+    {
+      gameStore.state = State.MODIFYING_GAME_BOUNDARY
       break
     }
     default:

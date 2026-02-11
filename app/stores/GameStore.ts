@@ -1,4 +1,4 @@
-import type { FeatureCollection, GeoJsonProperties, MultiPolygon } from 'geojson'
+import type { FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
 import * as turf from '@turf/turf'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
@@ -36,7 +36,6 @@ export interface CustomRegion {
 }
 
 export interface GameBoundary {
-  points: [number, number][]
   name: string
 }
 
@@ -49,8 +48,9 @@ export enum State {
   MODIFYING_THERMOMETER,
   ADDING_CUSTOM_REGION,
   MODIFYING_CUSTOM_REGION,
+  ADDING_GAME_BOUNDARY,
+  MODIFYING_GAME_BOUNDARY,
   ADDING_PINS,
-  SETTING_GAME_BOUNDARY,
   NULL,
 }
 
@@ -330,6 +330,45 @@ export const useGameStore = defineStore('game', () => {
     q.polygon = cr.inside ? p : mapStore.invertGeometry(p)
   }
 
+  function addGameBoundary(): Question {
+    const gb: GameBoundary = {
+      name: '',
+    }
+    const q: Question = {
+      type: 'GameBoundary',
+      id: nextQuestionId.value,
+      question: gb,
+      polygon: undefined,
+      timelineText: 'Game Boundary',
+      allInfoAvailable: false,
+    }
+    questions.value.push(q)
+    nextQuestionId.value += 1
+    moveTimelineMarkerToEnd()
+    onNewQuestionData()
+    // returning q does not work properly, but this does
+    return questions.value.at(-2)
+  }
+
+  function updateGameBoundary(q: Question, name: string, poly: GeoJsonProperties) {
+    if (q.type !== 'GameBoundary') {
+      return
+    }
+    const gb: GameBoundary = {
+      name,
+    }
+    q.allInfoAvailable = true
+    q.question = gb
+    q.polygon = turf.polygon(poly.coordinates)
+    //  poly
+    console.warn(q.polygon)
+    q.timelineText = `${gb.name}`
+    const map = mapStore.getMap()
+    const centre = turf.center(q.polygon)
+    map.setCenter(centre)
+    onNewQuestionData()
+  }
+
   function moveTimelineMarkerToEnd() {
     getTimelineMarkerIndex()
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
@@ -356,6 +395,7 @@ export const useGameStore = defineStore('game', () => {
 
       // when the map loads (will always be slower than loading local questions storage)
       // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
+      questions.value = []
       getTimelineMarkerIndex()
       // marker only
       if (questions.value.length === 1) {
@@ -388,8 +428,9 @@ export const useGameStore = defineStore('game', () => {
     onNewQuestionData()
   }
 
-  function onNewGame() {
-    state.value = State.SETTING_GAME_BOUNDARY
+  async function onNewGame() {
+    await nextTick()
+    state.value = State.ADDING_GAME_BOUNDARY
   }
 
   return {
@@ -402,6 +443,8 @@ export const useGameStore = defineStore('game', () => {
     updateThermometer,
     addCustomRegion,
     updateCustomRegion,
+    addGameBoundary,
+    updateGameBoundary,
     timelineMarkerIndex,
     gameArea,
     state,
