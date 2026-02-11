@@ -3,10 +3,11 @@ import {
   useGeolocation,
 } from '@vueuse/core'
 import { Marker } from 'maplibre-gl'
-import { useMapStore } from '~/stores/MapStore'
 import { getRGB, hexToRGBA } from '~/colourUtils'
+import { useMapStore } from '~/stores/MapStore'
 
 const mapStore = useMapStore()
+const gameStore = useGameStore()
 
 const { coords, locatedAt, error, resume, pause } = useGeolocation()
 
@@ -81,6 +82,11 @@ const items = computed(() => [
     label: 'Map type???',
     type: 'link',
     onSelect: () => { console.warn('map type todo') },
+  },
+  {
+    label: 'New game',
+    type: 'link',
+    onSelect: () => { gameStore.resetGame() },
   },
 ])
 </script>

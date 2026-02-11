@@ -1,6 +1,12 @@
 import type { FeatureCollection, GeoJsonProperties, MultiPolygon } from 'geojson'
 import * as turf from '@turf/turf'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+
 import { useMapStore } from '~/stores/MapStore'
+
+const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 
 // type guards
 export interface Question {
@@ -59,14 +65,16 @@ export const useGameStore = defineStore('game', () => {
 
   const timelineMarkerIndex: Ref<number> = ref(0)
 
-  questions.value.push({
-    question: undefined,
-    type: 'TimelineMarker',
-    timelineText: '',
-    id: -1,
-    polygon: undefined,
-    allInfoAvailable: true,
-  })
+  function addTimelineMarker() {
+    questions.value.push({
+      question: undefined,
+      type: 'TimelineMarker',
+      timelineText: '',
+      id: -1,
+      polygon: undefined,
+      allInfoAvailable: true,
+    })
+  }
 
   function calculateTotalPolygon(): GeoJsonProperties | undefined {
     const fullWorld: GeoJsonProperties = {
@@ -155,7 +163,6 @@ export const useGameStore = defineStore('game', () => {
       return
     }
     q.timelineText = `${radiusKm.toFixed(2)}km`
-    console.warn('setting timeline text to ', q.timelineText)
     const r: Radar = {
       hit,
       lnglat,
@@ -273,18 +280,17 @@ export const useGameStore = defineStore('game', () => {
 
   watch(mapLoaded, () => {
     if (mapLoaded.value) {
-      const q0 = addRadar()
-      updateRadar(q0, gameArea.radiusKm, gameArea.center, true)
-      const q1 = addRadar()
-      updateRadar(q1, 4, [-1.4432936229776763, 50.93119754191312], true)
+      // const q0 = addRadar()
+      // updateRadar(q0, gameArea.radiusKm, gameArea.center, true)
+      // const q1 = addRadar()
+      // updateRadar(q1, 4, [-1.4432936229776763, 50.93119754191312], true)
+      // const q2 = addThermometer()
+      // updateThermometer(q2, [-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
 
-      const q2 = addThermometer()
-      updateThermometer(q2, [-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
-
-      // addRadar(2, [-1.3583492927662713, 50.94474366229376], true)
-
-      // addRadar(2, 'kilometers', [-1.3583492927662713, 50.94474366229376], false)
-      // addRadar(2, 'kilometers', [-1.3889024760083344, 50.932672579033], true)
+      // when the map loads (will always be slower than loading local questions storage)
+      // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
+      getTimelineMarkerIndex()
+      onNewQuestionData()
     }
   })
 
@@ -298,6 +304,10 @@ export const useGameStore = defineStore('game', () => {
     timelineMarkerIndex.value = questions.value.findIndex((question) => {
       return question.type === 'TimelineMarker'
     })
+    if (timelineMarkerIndex.value === -1) {
+      console.warn('Adding timeline marker')
+      addTimelineMarker()
+    }
   }
 
   watch(questions, () => {
@@ -307,8 +317,15 @@ export const useGameStore = defineStore('game', () => {
     }
   })
 
+  function resetGame() {
+    questions.value.splice(0, questions.value.length)
+    addTimelineMarker()
+    onNewQuestionData()
+  }
+
   return {
     questions,
+    resetGame,
     onNewQuestionData,
     addRadar,
     addThermometer,
@@ -322,4 +339,9 @@ export const useGameStore = defineStore('game', () => {
     questionIdBeingEdited,
     timelineShowing,
   }
+}, {
+  persist: {
+    storage: typeof window !== 'undefined' ? localStorage : undefined,
+    paths: ['questions'],
+  },
 })

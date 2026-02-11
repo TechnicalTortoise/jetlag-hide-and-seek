@@ -16,6 +16,7 @@
     "@iconify-json/simple-icons": "^1.2.63",
     "@indoorequal/vue-maplibre-gl": "^8.4.2",
     "@nuxt/ui": "^4.4.0",
+    "@pinia-plugin-persistedstate/nuxt": "^1.2.1",
     "@pinia/nuxt": "0.11.3",
     "@turf/turf": "^7.3.2",
     "@types/geojson": "^7946.0.16",
@@ -25,6 +26,7 @@
     "mitt": "^3.0.1",
     "nuxt": "^4.2.2",
     "pinia": "^3.0.4",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "vue-maplibre-gl": "^5.5.9",
     "vuedraggable": "^4.1.0"
   },

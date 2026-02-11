@@ -11,35 +11,47 @@ const gameStore = useGameStore()
 const el = useTemplateRef('el')
 const { questions } = storeToRefs(gameStore)
 
-useSortable(el, questions, {
-  handle: '.handle',
+onMounted(async () => {
+  await nextTick()
+  if (el.value) {
+    useSortable(el.value, questions, {
+      handle: '.handle',
+    })
+    // await nextTick()
+    // gameStore.onNewQuestionData()
+  }
+  else {
+    console.warn('Sortable is undefined')
+  }
 })
 </script>
 
 <template>
-  <Transition name="slide">
-    <div
-      v-show="gameStore.timelineShowing"
-      ref="el"
-      class="fixed w-screen h-20 bg-default pointer-events-auto flex flex-nowrap overflow-x-auto shrink-0 bottom-0 z-50  items-center gap-0 rounded-t-lg overflow-y-hidden"
-    >
+  <ClientOnly>
+    <Transition name="slide">
       <div
-        v-for="question in questions"
-        :key="question.id"
+        v-show="gameStore.timelineShowing"
+        ref="el"
+        class="fixed w-screen h-20 bg-default pointer-events-auto flex flex-nowrap overflow-x-auto shrink-0 bottom-0 z-50  items-center gap-0 rounded-t-lg overflow-y-hidden"
       >
-        <TimelineItem
-          v-if="question.id > -1"
-          :id="question.id"
-          :text="question.timelineText"
-          :type="question.type"
-        />
         <div
-          v-else
-          class="w-8 h-16 bg-red-400 handle rounded-md"
-        />
+          v-for="question in questions"
+          :key="question.id"
+        >
+          <TimelineItem
+            v-if="question.id > -1"
+            :id="question.id"
+            :text="question.timelineText"
+            :type="question.type"
+          />
+          <div
+            v-else
+            class="w-8 h-16 bg-red-400 handle rounded-md"
+          />
+        </div>
       </div>
-    </div>
-  </Transition>
+    </Transition>
+  </ClientOnly>
 </template>
 
 <style>
