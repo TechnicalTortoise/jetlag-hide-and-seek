@@ -11,7 +11,7 @@ import TopDrawer from './TopDrawer.vue'
 const pinColour: [string, number] = ['tertiary', 500]
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-let question: Question | undefined
+const { questionBeingEdited } = storeToRefs(gameStore)
 
 const bodyText = ref('Select points on the map to create a region')
 
@@ -25,14 +25,15 @@ const active = computed(() => {
 })
 
 function updateQuestion() {
-  if (question === undefined) {
+  if (questionBeingEdited.value === undefined) {
     return
   }
   const points: [number, number][] = []
   markers.forEach((m) => {
     points.push(mapStore.getMarker(m).getLngLat().toArray())
   })
-  gameStore.updateCustomRegion(question, points, inside.value)
+
+  gameStore.updateCustomRegion(questionBeingEdited.value, points, inside.value)
 }
 
 function resetFn() {
@@ -41,11 +42,6 @@ function resetFn() {
   })
   markers = []
   currentId = 0
-  setBodyText()
-}
-
-function setBodyText() {
-
 }
 
 function onMarkerDrag() {
@@ -72,36 +68,15 @@ function onMapClick(e: MapMouseEvent) {
     return
   }
   newMarker(e.lngLat.toArray())
-  setBodyText()
-}
-
-function deleteQuestion() {
-  if (question !== undefined) {
-    gameStore.removeQuestion(question.id)
-  }
-  topDrawerRef.value?.closeFn()
-}
-
-function add() {
-  topDrawerRef.value?.closeFn()
-}
-
-function edit() {
-  topDrawerRef.value?.closeFn()
 }
 
 function allInfoFilled(): boolean {
   return true
 }
 
-function onStartAdding() {
-  resetFn()
-  question = gameStore.addCustomRegion()
-}
-
 function onStartEditing() {
   resetFn()
-  question = gameStore.getQuestionToEdit(gameStore.questionIdBeingEdited)
+  const question = questionBeingEdited.value
   if (question === undefined || question.type !== 'CustomRegion') {
     return
   }
@@ -113,20 +88,6 @@ function onStartEditing() {
   cr.points.forEach((p) => {
     newMarker(p)
   })
-  setBodyText()
-}
-
-function onCancel() {
-  // todo reuse this code
-  if (gameStore.state === State.ADDING_CUSTOM_REGION) {
-    if (question !== undefined) {
-      gameStore.removeQuestion(question.id)
-    }
-  }
-  else if (gameStore.state === State.MODIFYING_CUSTOM_REGION) {
-    gameStore.onNewQuestionData()
-  }
-  topDrawerRef.value?.closeFn()
 }
 
 watch(inside, () => {
@@ -141,17 +102,13 @@ watch(inside, () => {
     :adding-state="State.ADDING_CUSTOM_REGION"
     :modifying-state="State.MODIFYING_CUSTOM_REGION"
     :reset-fn="resetFn"
-    :body-text="bodyText"
     :on-map-click-fn="onMapClick"
-    :delete-fn="deleteQuestion"
-    :add-fn="add"
-    :edit-fn="edit"
     :all-info-filled-fn="allInfoFilled"
-    :on-start-adding="onStartAdding"
+    :create-new-question="gameStore.addCustomRegion"
     :on-start-editing="onStartEditing"
-    :on-cancel-fn="onCancel"
   >
     <template #MainContentSlot>
+      {{ bodyText }}
       <UCheckbox
         v-model="inside"
         label="Inside"

@@ -91,10 +91,8 @@ function onCancel() {
   }
   else if (gameStore.state === props.modifyingState) {
     // todo, make a copy of the question being edited and revert to it
-    console.warn(questionBeingEdited.value?.question)
-    console.warn(initialQuestionData)
-    questionBeingEdited.value.question = JSON.parse(JSON.stringify(initialQuestionData))
     if (questionBeingEdited.value) {
+      questionBeingEdited.value.question = JSON.parse(JSON.stringify(initialQuestionData))
       gameStore.updateQuestion(questionBeingEdited.value)
     }
   }

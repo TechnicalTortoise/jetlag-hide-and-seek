@@ -10,7 +10,7 @@ const pinColour1: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-let question: Question | undefined
+const { questionBeingEdited } = storeToRefs(gameStore)
 
 const bodyText = ref('placeholder')
 
@@ -28,7 +28,6 @@ const active = computed(() => {
 })
 
 function resetFn() {
-  question = undefined
   if (marker0Exists) {
     mapStore.removeMarker(markerId0)
   }
@@ -62,10 +61,10 @@ function setBodyText() {
 }
 
 function updateQuestion() {
-  if (question === undefined || lnglat0 === undefined || lnglat1 === undefined) {
+  if (questionBeingEdited.value === undefined || lnglat0 === undefined || lnglat1 === undefined) {
     return
   }
-  gameStore.updateThermometer(question, lnglat0, lnglat1, warmer.value)
+  gameStore.updateThermometer(questionBeingEdited.value, lnglat0, lnglat1, warmer.value)
 }
 
 function onDrag0() {
@@ -101,33 +100,13 @@ function onMapClick(e: MapMouseEvent) {
   setBodyText()
 }
 
-function deleteQ() {
-  if (question !== undefined) {
-    gameStore.removeQuestion(question.id)
-  }
-  topDrawerRef.value?.closeFn()
-}
-
-function add() {
-  topDrawerRef.value?.closeFn()
-}
-
-function edit() {
-  topDrawerRef.value?.closeFn()
-}
-
 function allInfoFilled(): boolean {
   return lnglat0 !== undefined && lnglat1 !== undefined
 }
 
-function onStartAdding() {
-  resetFn()
-  question = gameStore.addThermometer()
-}
-
 function onStartEditing() {
   resetFn()
-  question = gameStore.getQuestionToEdit(gameStore.questionIdBeingEdited)
+  const question = questionBeingEdited.value
   if (question === undefined || question.type !== 'Thermometer') {
     return
   }
@@ -155,18 +134,6 @@ function onStartEditing() {
 watch(warmer, () => {
   updateQuestion()
 })
-
-function onCancel() {
-  if (gameStore.state === State.ADDING_THERMOMENTER) {
-    if (question !== undefined) {
-      gameStore.removeQuestion(question.id)
-    }
-  }
-  else if (gameStore.state === State.MODIFYING_THERMOMETER) {
-    gameStore.onNewQuestionData()
-  }
-  topDrawerRef.value?.closeFn()
-}
 </script>
 
 <template>
@@ -176,17 +143,14 @@ function onCancel() {
     :adding-state="State.ADDING_THERMOMENTER"
     :modifying-state="State.MODIFYING_THERMOMETER"
     :reset-fn="resetFn"
-    :body-text="bodyText"
     :on-map-click-fn="onMapClick"
-    :delete-fn="deleteQ"
-    :add-fn="add"
-    :edit-fn="edit"
     :all-info-filled-fn="allInfoFilled"
-    :on-start-adding="onStartAdding"
+    :create-new-question="gameStore.addThermometer"
     :on-start-editing="onStartEditing"
-    :on-cancel-fn="onCancel"
   >
     <template #MainContentSlot>
+      {{ bodyText }}
+      <br>
       <UCheckbox
         v-model="warmer"
         label="Warmer"

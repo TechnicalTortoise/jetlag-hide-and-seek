@@ -19,9 +19,9 @@ const map = useTemplateRef('map')
     </div>
 
     <RadarEditor />
-    <!-- <ThermometerEditor /> -->
+    <ThermometerEditor />
     <!-- <PinEditor /> -->
-    <!-- <CustomRegionEditor /> -->
+    <CustomRegionEditor />
     <!-- <GameBoundarySelectionMenu /> -->
     <SideButtons />
   </div>

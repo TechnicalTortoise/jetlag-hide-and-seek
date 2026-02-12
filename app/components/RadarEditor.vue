@@ -114,40 +114,20 @@ function updateRadar() {
 </script>
 
 <template>
-  <TopDrawer
-    ref="topDrawerRef"
-    name="Radar"
-    :adding-state="State.ADDING_RADAR"
-    :modifying-state="State.MODIFYING_RADAR"
-    :reset-fn="resetFn"
-    :on-map-click-fn="onMapClick"
-    :all-info-filled-fn="allInfoFilled"
-    :create-new-question="gameStore.addRadar"
-    :on-start-editing="onStartEditing"
-  >
+  <TopDrawer ref="topDrawerRef" name="Radar" :adding-state="State.ADDING_RADAR" :modifying-state="State.MODIFYING_RADAR"
+    :reset-fn="resetFn" :on-map-click-fn="onMapClick" :all-info-filled-fn="allInfoFilled"
+    :create-new-question="gameStore.addRadar" :on-start-editing="onStartEditing">
     <template #MainContentSlot>
       {{ positionString }}
       <br>
       Radius:
-      <UInputNumber
-        v-model="radiusKm"
-        :format-options="{
-          minimumFractionDigits: 1,
-          style: 'unit',
-          unit: 'kilometer',
-        }"
-        :step-snapping="false"
-        :increment="true"
-        :decrement="true"
-        :min="0"
-      />
+      <UInputNumber v-model="radiusKm" :format-options="{
+        minimumFractionDigits: 1,
+        style: 'unit',
+        unit: 'kilometer',
+      }" :step-snapping="false" :increment="true" :decrement="true" :min="0" />
 
-      <UCheckbox
-        v-model="hit"
-        label="Hit"
-        indicator="end"
-        class="w-min"
-      />
+      <UCheckbox v-model="hit" label="Hit" indicator="end" class="w-min" />
     </template>
   </TopDrawer>
 </template>
