@@ -59,9 +59,12 @@ export const useGameStore = defineStore('game', () => {
   const mapStore = useMapStore()
   const { mapLoaded } = storeToRefs(mapStore)
   const state = ref(State.MAIN)
-  const nextQuestionId = ref(0)
   const timelineShowing = ref(true)
   const questionIdBeingEdited = ref(-1)
+
+  function generateQuestionId(): number {
+    return Date.now()
+  }
 
   const gameArea = {
     center: [-1.407516809729255, 50.94303107100244] as [number, number],
@@ -150,14 +153,13 @@ export const useGameStore = defineStore('game', () => {
     }
     const q: Question = {
       type: 'Radar',
-      id: nextQuestionId.value,
+      id: generateQuestionId(),
       question: r,
       polygon: undefined,
       timelineText: 'New Radar',
       allInfoAvailable: false,
     }
     questions.value.push(q)
-    nextQuestionId.value += 1
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
@@ -197,14 +199,14 @@ export const useGameStore = defineStore('game', () => {
     }
     const q: Question = {
       type: 'Thermometer',
-      id: nextQuestionId.value,
+      id: generateQuestionId(),
       question: t,
       polygon: undefined,
       timelineText: 'New Thermo.',
       allInfoAvailable: false,
     }
     questions.value.push(q)
-    nextQuestionId.value += 1
+
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     return questions.value.at(-2)
@@ -276,14 +278,13 @@ export const useGameStore = defineStore('game', () => {
     }
     const q: Question = {
       type: 'CustomRegion',
-      id: nextQuestionId.value,
+      id: generateQuestionId(),
       question: cr,
       polygon: undefined,
       timelineText: 'New Region',
       allInfoAvailable: false,
     }
     questions.value.push(q)
-    nextQuestionId.value += 1
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
@@ -337,14 +338,13 @@ export const useGameStore = defineStore('game', () => {
     }
     const q: Question = {
       type: 'GameBoundary',
-      id: nextQuestionId.value,
+      id: generateQuestionId(),
       question: gb,
       polygon: undefined,
       timelineText: 'Game Boundary',
       allInfoAvailable: false,
     }
     questions.value.push(q)
-    nextQuestionId.value += 1
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
@@ -451,10 +451,7 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function onNewGame() {
-    await nextTick()
-    await nextTick()
-    await nextTick()
-    state.value = State.ADDING_GAME_BOUNDARY
+
   }
 
   return {

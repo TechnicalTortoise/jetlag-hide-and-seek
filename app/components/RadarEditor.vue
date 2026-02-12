@@ -11,7 +11,7 @@ const mapStore = useMapStore()
 let question: Question | undefined
 
 const radiusKm = ref(0)
-const hit = ref(false)
+const hit = ref(true)
 let lnglat: [number, number] | undefined
 
 const markerId = 'NewRadarMarker'
@@ -33,7 +33,7 @@ function resetFn() {
     markerExists = false
   }
   radiusKm.value = 0
-  hit.value = false
+  hit.value = true
 }
 
 function setBodyText() {

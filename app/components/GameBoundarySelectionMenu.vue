@@ -12,6 +12,7 @@ const returnedPlaceNames: Ref<string[]> = ref([])
 
 const searchTerm = ref('')
 const selectedPlaceName = ref('')
+const selectedPlaceShortName = ref('')
 let selectedPolygon: GeoJsonProperties | undefined
 let previousSearchedTerm = ''
 const { ready, start } = useTimeout(1000, { controls: true })
@@ -89,7 +90,7 @@ async function selectPlace() {
   const feature = returnedFeatures.value.features[selectedPlaceIndex.value]
   const id = getPlaceId(returnedFeatures.value.features[selectedPlaceIndex.value])
   const name: string = feature?.properties.city
-
+  selectedPlaceShortName.value = name
   selectedPolygon = await getPlacePolygon(name, id)
   console.warn(selectedPolygon)
   if (selectedPolygon) {

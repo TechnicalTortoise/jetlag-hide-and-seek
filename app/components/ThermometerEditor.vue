@@ -14,7 +14,7 @@ let question: Question | undefined
 
 const bodyText = ref('placeholder')
 
-const warmer = ref(false)
+const warmer = ref(true)
 const markerId0 = 'NewThermometerMarker0'
 const markerId1 = 'NewThermometerMarker1'
 let marker0Exists: boolean = false
@@ -38,7 +38,7 @@ function resetFn() {
   marker0Exists = false
   marker1Exists = false
 
-  warmer.value = false
+  warmer.value = true
   lnglat0 = undefined
   lnglat1 = undefined
   setBodyText()
