@@ -7,16 +7,11 @@ const props = defineProps<{
   name: string // eg Radar, thermoeter
   addingState: State
   modifyingState: State
-  bodyText: string
   resetFn: () => (void)
   onMapClickFn: (e: MapMouseEvent) => (void)
-  deleteFn: () => (void)
-  addFn: () => (void)
-  editFn: () => (void)
   allInfoFilledFn: () => (boolean)
-  onStartAdding: () => (void)
+  createNewQuestion: () => (Question)
   onStartEditing: () => (void)
-  onCancelFn: () => (void)
 }>()
 
 const gameStore = useGameStore()
@@ -24,12 +19,20 @@ const mapStore = useMapStore()
 
 const addButtonEnabled = ref(true) // todo how to set this with a computed function?
 
-const { state } = storeToRefs(gameStore)
+const { state, questionBeingEdited } = storeToRefs(gameStore)
+
+let initialQuestionData: Question
+
+function startAdding() {
+  props.resetFn()
+  const q = props.createNewQuestion()
+  gameStore.setQuestionBeingEdited(q.id)
+}
 
 function closeFn() {
   props.resetFn()
   state.value = State.MAIN
-  gameStore.questionIdBeingEdited = -1
+  gameStore.setQuestionBeingEdited(-1)
 }
 
 const isActive = computed(() => {
@@ -54,9 +57,10 @@ watch(state, () => {
     return
   }
   if (state.value === props.addingState) {
-    props.onStartAdding()
+    startAdding()
   }
-  if (state.value === props.modifyingState) {
+  if (state.value === props.modifyingState && questionBeingEdited.value) {
+    initialQuestionData = JSON.parse(JSON.stringify(questionBeingEdited.value.question))
     props.onStartEditing()
   }
 })
@@ -68,27 +72,41 @@ watch(mapStore, () => {
   }
 })
 
-function addOrEdit() {
+function updateOrAdd() {
   if (!props.allInfoFilledFn()) {
     return
   }
-  if (isModifying.value) {
-    props.editFn()
-  }
-  else {
-    props.addFn()
-  }
-  closeFn()
-}
-
-function deleteQ() {
-  props.deleteFn()
   closeFn()
 }
 
 const title = computed(() => {
   return isModifying.value ? `Modifying ${props.name}` : `Adding ${props.name}`
 })
+
+function onCancel() {
+  if (gameStore.state === props.addingState) {
+    if (questionBeingEdited.value !== undefined) {
+      gameStore.removeQuestion(questionBeingEdited.value.id)
+    }
+  }
+  else if (gameStore.state === props.modifyingState) {
+    // todo, make a copy of the question being edited and revert to it
+    console.warn(questionBeingEdited.value?.question)
+    console.warn(initialQuestionData)
+    questionBeingEdited.value.question = JSON.parse(JSON.stringify(initialQuestionData))
+    if (questionBeingEdited.value) {
+      gameStore.updateQuestion(questionBeingEdited.value)
+    }
+  }
+  closeFn()
+}
+
+function deleteQuestion() {
+  if (questionBeingEdited.value !== undefined) {
+    gameStore.removeQuestion(questionBeingEdited.value.id)
+  }
+  closeFn()
+}
 </script>
 
 <template>
@@ -103,9 +121,6 @@ const title = computed(() => {
     :title="title"
   >
     <template #body>
-      {{ props.bodyText }}
-      <br>
-
       <slot name="MainContentSlot" />
     </template>
 
@@ -115,21 +130,21 @@ const title = computed(() => {
         color="primary"
         class="justify-center"
         :disabled="!addButtonEnabled"
-        @click="addOrEdit"
+        @click="updateOrAdd"
       />
       <UButton
         v-if="isModifying"
         label="Delete"
         color="error"
         class="justify-center"
-        @click="deleteQ"
+        @click="deleteQuestion"
       />
       <UButton
         label="Cancel"
         color="neutral"
         variant="outline"
         class="justify-center"
-        @click="onCancelFn"
+        @click="onCancel"
       />
     </template>
   </UDrawer>

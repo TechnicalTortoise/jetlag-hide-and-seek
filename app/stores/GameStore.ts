@@ -61,6 +61,7 @@ export const useGameStore = defineStore('game', () => {
   const state = ref(State.MAIN)
   const timelineShowing = ref(true)
   const questionIdBeingEdited = ref(-1)
+  const questionBeingEdited: Ref<Question | undefined> = ref(null)
 
   function generateQuestionId(): number {
     return Date.now()
@@ -165,7 +166,6 @@ export const useGameStore = defineStore('game', () => {
     if (q.type !== 'Radar') {
       return
     }
-    q.timelineText = `${radiusKm.toFixed(2)}km`
     const r: Radar = {
       hit,
       lnglat,
@@ -184,6 +184,7 @@ export const useGameStore = defineStore('game', () => {
     const r: Radar = q.question
     const p: GeoJsonProperties = turf.circle(r.lnglat, r.radiusKm, { steps: 64, units: 'kilometers' })
     q.polygon = r.hit ? p : mapStore.invertGeometry(p)
+    q.timelineText = `${r.radiusKm.toFixed(2)}km`
   }
 
   function addThermometer(): Question {
@@ -211,8 +212,7 @@ export const useGameStore = defineStore('game', () => {
     if (q.type !== 'Thermometer') {
       return
     }
-    const d: number = turf.distance(lnglatStart, lnglatEnd, 'kilometers')
-    q.timelineText = `${d.toFixed(2)}km`
+
     const t: Thermometer = {
       lnglatStart,
       lnglatEnd,
@@ -231,6 +231,8 @@ export const useGameStore = defineStore('game', () => {
     if (t === undefined || t.lnglatStart === undefined || t.lnglatEnd === undefined || t.warmer === undefined) {
       return
     }
+    const d: number = turf.distance(t.lnglatStart, t.lnglatEnd, 'kilometers')
+    q.timelineText = `${d.toFixed(2)}km`
     q.polygon = createThermometerPolygon(t.lnglatStart, t.lnglatEnd, t.warmer)
   }
 
@@ -306,14 +308,6 @@ export const useGameStore = defineStore('game', () => {
     q.question = cr
     setCustomRegionPolygon(q)
 
-    let areaKm2 = 0
-    if (q.polygon) {
-      const p = inside ? q.polygon : mapStore.invertGeometry(q.polygon)
-      areaKm2 = turf.area(p) * 1e-6
-    }
-
-    q.timelineText = `${areaKm2.toFixed(2)}km²`
-
     onNewQuestionData()
   }
 
@@ -333,6 +327,14 @@ export const useGameStore = defineStore('game', () => {
     points.push(cr.points[0])
     const p: GeoJsonProperties = turf.polygon([points])
     q.polygon = cr.inside ? p : mapStore.invertGeometry(p)
+
+    let areaKm2 = 0
+    if (q.polygon) {
+      const p = cr.inside ? q.polygon : mapStore.invertGeometry(q.polygon)
+      areaKm2 = turf.area(p) * 1e-6
+    }
+
+    q.timelineText = `${areaKm2.toFixed(2)}km²`
   }
 
   function addGameBoundary(): Question {
@@ -394,6 +396,22 @@ export const useGameStore = defineStore('game', () => {
     onNewQuestionData()
   }
 
+  function setQuestionPolygon(q: Question) {
+    if (q.type === 'Radar') {
+      setRadarPolygon(q)
+    }
+    else if (q.type === 'Thermometer') {
+      setThermometerPolygon(q)
+    }
+    else if (q.type === 'CustomRegion') {
+      setCustomRegionPolygon(q)
+    }
+    else {
+      console.warn('Trying to set question polygon for unhandled type ', q.type)
+    }
+    onNewQuestionData()
+  }
+
   function moveTimelineMarkerToEnd() {
     getTimelineMarkerIndex()
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
@@ -402,11 +420,16 @@ export const useGameStore = defineStore('game', () => {
     getTimelineMarkerIndex()
   }
 
-  function getQuestionToEdit(id: number): Question | undefined {
+  function setQuestionBeingEdited(id: number) {
     questionIdBeingEdited.value = id
-    return questions.value.find((q) => {
-      return id === q.id
-    })
+    if (id === -1) {
+      questionBeingEdited.value = undefined
+    }
+    else {
+      questionBeingEdited.value = questions.value.find((q) => {
+        return id === q.id
+      })
+    }
   }
 
   watch(mapLoaded, () => {
@@ -469,10 +492,12 @@ export const useGameStore = defineStore('game', () => {
     updateCustomRegion,
     addGameBoundary,
     updateGameBoundary,
+    updateQuestion: setQuestionPolygon,
     timelineMarkerIndex,
     state,
     removeQuestion,
-    getQuestionToEdit,
+    setQuestionBeingEdited,
+    questionBeingEdited,
     questionIdBeingEdited,
     timelineShowing,
   }

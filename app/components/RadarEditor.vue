@@ -8,7 +8,7 @@ const pinColour: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
-let question: Question | undefined
+const { questionBeingEdited } = storeToRefs(gameStore)
 
 const radiusKm = ref(0)
 const hit = ref(true)
@@ -25,7 +25,6 @@ const active = computed(() => {
 })
 
 function resetFn() {
-  question = undefined
   lnglat = undefined
   setBodyText()
   if (markerExists) {
@@ -46,38 +45,26 @@ function setBodyText() {
 }
 
 function onMarkerDrag() {
+  if (!active.value || questionBeingEdited.value === undefined) {
+    return
+  }
   lnglat = mapStore.getMarker(markerId).getLngLat().toArray()
-  gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
+  gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
   setBodyText()
 }
 
 function onMapClick(e: MapMouseEvent) {
-  if (!active.value) {
+  if (!active.value || questionBeingEdited.value === undefined) {
     return
   }
   lnglat = e.lngLat.toArray()
-  gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
+  gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
   if (markerExists) {
     mapStore.removeMarker(markerId)
   }
   mapStore.addMarker(markerId, lnglat, true, onMarkerDrag, getRGB(pinColour))
   markerExists = true
   setBodyText()
-}
-
-function deleteRadar() {
-  if (question !== undefined) {
-    gameStore.removeQuestion(question.id)
-  }
-  topDrawerRef.value?.closeFn()
-}
-
-function add() {
-  topDrawerRef.value?.closeFn()
-}
-
-function edit() {
-  topDrawerRef.value?.closeFn()
 }
 
 function allInfoFilled(): boolean {
@@ -87,19 +74,12 @@ function allInfoFilled(): boolean {
   if (radiusKm.value === 0) {
     return false
   }
-
   return true
-}
-
-function onStartAdding() {
-  resetFn()
-  question = gameStore.addRadar()
-  gameStore.questionIdBeingEdited = question.id
 }
 
 function onStartEditing() {
   resetFn()
-  question = gameStore.getQuestionToEdit(gameStore.questionIdBeingEdited)
+  const question = questionBeingEdited.value
   if (question === undefined || question.type !== 'Radar') {
     return
   }
@@ -120,26 +100,16 @@ function onStartEditing() {
 }
 
 watch(hit, () => {
-  if (question !== undefined && lnglat !== undefined) {
-    gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
-  }
+  updateRadar()
 })
 watch(radiusKm, () => {
-  if (question !== undefined && lnglat !== undefined) {
-    gameStore.updateRadar(question, radiusKm.value, lnglat, hit.value)
-  }
+  updateRadar()
 })
 
-function onCancel() {
-  if (gameStore.state === State.ADDING_RADAR) {
-    if (question !== undefined) {
-      gameStore.removeQuestion(question.id)
-    }
+function updateRadar() {
+  if (questionBeingEdited.value !== undefined && lnglat !== undefined) {
+    gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
   }
-  else if (gameStore.state === State.MODIFYING_RADAR) {
-    gameStore.onNewQuestionData()
-  }
-  topDrawerRef.value?.closeFn()
 }
 </script>
 
@@ -150,17 +120,14 @@ function onCancel() {
     :adding-state="State.ADDING_RADAR"
     :modifying-state="State.MODIFYING_RADAR"
     :reset-fn="resetFn"
-    :body-text="positionString"
     :on-map-click-fn="onMapClick"
-    :delete-fn="deleteRadar"
-    :add-fn="add"
-    :edit-fn="edit"
     :all-info-filled-fn="allInfoFilled"
-    :on-start-adding="onStartAdding"
+    :create-new-question="gameStore.addRadar"
     :on-start-editing="onStartEditing"
-    :on-cancel-fn="onCancel"
   >
     <template #MainContentSlot>
+      {{ positionString }}
+      <br>
       Radius:
       <UInputNumber
         v-model="radiusKm"
