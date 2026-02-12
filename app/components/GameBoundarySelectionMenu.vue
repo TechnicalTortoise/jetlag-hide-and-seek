@@ -12,7 +12,7 @@ const returnedPlaceNames: Ref<string[]> = ref([])
 
 const searchTerm = ref('')
 const selectedPlaceName = ref('')
-let selectedPolygon: GeoJsonProperties
+let selectedPolygon: GeoJsonProperties | undefined
 let previousSearchedTerm = ''
 const { ready, start } = useTimeout(1000, { controls: true })
 const searchRunning = ref(false)
@@ -86,16 +86,17 @@ async function selectPlace() {
     return
   }
 
+  const feature = returnedFeatures.value.features[selectedPlaceIndex.value]
   const id = getPlaceId(returnedFeatures.value.features[selectedPlaceIndex.value])
+  const name: string = feature?.properties.city
 
-  const data: FeatureCollection = await getPlacePolygon(id)
-  if (data.features.length > 0) {
-    const f = data.features.at(0)
-    if (f?.geometry.type === 'Polygon') {
-      selectedPolygon = f.geometry
-      updateQuestion()
-    }
+  selectedPolygon = await getPlacePolygon(name, id)
+  console.warn(selectedPolygon)
+  if (selectedPolygon) {
+    updateQuestion()
   }
+  // selectedPolygon = f.geometry
+  // updateQuestion()
 }
 
 watch(searchTerm, () => {
@@ -123,7 +124,17 @@ watch(ready, () => {
   }
 })
 
+async function tempFn() {
+  // const data = getPlacePolygon('Southampton', '51757286e28e77f6bf59d37f7b4386734940f00103f901efdcbc9300000000c00208') // southampton
+  // const data = await getPlacePolygon('Portsmouth', '51fe13b7651b73f1bf59a164726a67664940f00101f901bff0010000000000c00206') // portsmouth
+  const data = await getPlacePolygon('Brussels', '51be672442236811405954d856fd5b6c4940f00101f901a2e3000000000000c00208')
+  console.warn(data)
+}
+
 async function search() {
+  if (searchTerm.value.length < 2) {
+    return
+  }
   searchRunning.value = true
   try {
     const data: FeatureCollection = await searchPlaces(searchTerm.value)
@@ -147,6 +158,7 @@ async function search() {
     }
 
     selectMenuOpen.value = (returnedPlaceNames.value.length > 0)
+    console.warn(returnedFeatures.value.features)
   }
   catch (error) {
     console.error('Search error: ', error)
@@ -180,6 +192,10 @@ async function search() {
         :loading="searchRunning"
         placeholder="Search for a place..."
         class="w-full"
+      />
+      <UButton
+        label="blub"
+        @click="tempFn"
       />
     </template>
   </TopDrawer>

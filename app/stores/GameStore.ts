@@ -111,6 +111,7 @@ export const useGameStore = defineStore('game', () => {
       if (q.polygon === undefined) {
         continue
       }
+
       if (polygon === undefined) {
         polygon = mapStore.invertGeometry(q.polygon)
       }
@@ -357,15 +358,36 @@ export const useGameStore = defineStore('game', () => {
     const gb: GameBoundary = {
       name,
     }
+
+    q.polygon = poly
     q.allInfoAvailable = true
     q.question = gb
-    q.polygon = turf.polygon(poly.coordinates)
-    //  poly
-    console.warn(q.polygon)
+    if (poly.geometry.type === 'Polygon') {
+      q.polygon = poly
+    }
+    else if (poly.geometry.type === 'MultiPolygon') {
+      let biggestPolygon: GeoJsonProperties | undefined
+      let biggestArea: number = 0
+      for (let i = 0; i < poly.geometry.coordinates.length; i += 1) {
+        const subP = turf.polygon(poly.geometry.coordinates[i])
+        const area = turf.area(subP)
+        if (area > biggestArea) {
+          biggestArea = area
+          biggestPolygon = subP
+        }
+      }
+      q.polygon = biggestPolygon
+    }
     q.timelineText = `${gb.name}`
-    const map = mapStore.getMap()
-    const centre = turf.center(q.polygon)
-    map.setCenter(centre)
+
+    if (q.polygon) {
+      const centre = turf.center(q.polygon).geometry.coordinates
+      if (centre) {
+        const map = mapStore.getMap()
+        map.setCenter(centre)
+      }
+    }
+
     onNewQuestionData()
   }
 
@@ -395,7 +417,7 @@ export const useGameStore = defineStore('game', () => {
 
       // when the map loads (will always be slower than loading local questions storage)
       // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
-      questions.value = []
+      // questions.value = []
       getTimelineMarkerIndex()
       // marker only
       if (questions.value.length === 1) {
@@ -429,6 +451,8 @@ export const useGameStore = defineStore('game', () => {
   }
 
   async function onNewGame() {
+    await nextTick()
+    await nextTick()
     await nextTick()
     state.value = State.ADDING_GAME_BOUNDARY
   }
