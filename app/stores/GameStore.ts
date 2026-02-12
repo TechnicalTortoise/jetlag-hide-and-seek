@@ -66,11 +66,6 @@ export const useGameStore = defineStore('game', () => {
     return Date.now()
   }
 
-  const gameArea = {
-    center: [-1.407516809729255, 50.94303107100244] as [number, number],
-    radiusKm: 7.0,
-  }
-
   const timelineMarkerIndex: Ref<number> = ref(0)
 
   function addTimelineMarker() {
@@ -243,12 +238,20 @@ export const useGameStore = defineStore('game', () => {
     const bearing = turf.bearing(lnglatStart, lnglatEnd)
     const perpBearing = (bearing + 90) % 360
     const midPoint = turf.midpoint(lnglatStart, lnglatEnd)
-    const dist = 10
-    const p0 = turf.destination(midPoint, dist, perpBearing, { units: 'kilometers' }).geometry.coordinates
-    const p1 = turf.destination(midPoint, -dist, perpBearing, { units: 'kilometers' }).geometry.coordinates
-    const line = turf.lineString([p0, p1])
+
+    const minimumSampleDistanceKm = 20
+    const maximumSampleDistanceKm = 1000 // getting too big causes errors
+    const maxDist = Math.min(Math.max(turf.distance(lnglatStart, lnglatEnd, { units: 'kilometers' }) * 10, minimumSampleDistanceKm), maximumSampleDistanceKm)
+    const divs = 32
+    const step = maxDist / divs
+    const samplePoints = []
+    for (let d = -maxDist; d < maxDist + divs; d += step) {
+      const p = turf.destination(midPoint, d, perpBearing, { units: 'kilometers' }).geometry.coordinates
+      samplePoints.push(p)
+    }
+    const line = turf.lineString(samplePoints)
     const cutter = turf.buffer(line, 0.1, { units: 'meters' })
-    const circleToSplit = turf.circle(midPoint, dist / 2, { units: 'kilometers', steps: 64 })
+    const circleToSplit = turf.circle(midPoint, maxDist / 2.2, { units: 'kilometers', steps: 640 })
     const polygons: MultiPolygon = turf.difference(turf.featureCollection([circleToSplit, cutter]))
     const geometry = polygons.geometry.coordinates
     if (geometry.length !== 2) {
@@ -467,7 +470,6 @@ export const useGameStore = defineStore('game', () => {
     addGameBoundary,
     updateGameBoundary,
     timelineMarkerIndex,
-    gameArea,
     state,
     removeQuestion,
     getQuestionToEdit,
