@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { DropdownMenuItem } from '@nuxt/ui'
+import { ICONS } from '~/constants'
 import { State, useGameStore } from '~/stores/GameStore'
 
 const gameStore = useGameStore()
@@ -9,25 +10,25 @@ const items = ref<DropdownMenuItem[][]>([[
   {
     label: 'Radar',
     type: 'link',
-    icon: 'i-material-symbols:radar',
+    icon: ICONS.radar,
     onSelect: () => { state.value = State.ADDING_RADAR },
   },
   {
     label: 'Thermometer',
     type: 'link',
-    icon: 'i-material-symbols:thermometer-outline',
+    icon: ICONS.thermometer,
     onSelect: () => { state.value = State.ADDING_THERMOMENTER },
   },
   {
     label: 'Custom Region',
     type: 'link',
-    icon: 'i-material-symbols:polyline-outline-rounded',
+    icon: ICONS.customRegion,
     onSelect: () => { state.value = State.ADDING_CUSTOM_REGION },
   },
   {
     label: 'Pin',
     type: 'link',
-    icon: 'i-material-symbols:location-on-outline-rounded',
+    icon: ICONS.pin,
     onSelect: () => { state.value = State.ADDING_PINS },
   },
 ]])

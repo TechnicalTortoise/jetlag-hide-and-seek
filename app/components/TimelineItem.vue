@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Icon } from '@iconify/vue'
+import { ICONS } from '~/constants'
 import { State, useGameStore } from '~/stores/GameStore'
 
 const props = defineProps<{
@@ -12,18 +12,18 @@ const gameStore = useGameStore()
 
 const iconName = computed(() => {
   if (props.type === 'Radar') {
-    return 'material-symbols:radar'
+    return ICONS.radar
   }
   else if (props.type === 'Thermometer') {
-    return 'material-symbols:thermometer-outline'
+    return ICONS.thermometer
   }
   else if (props.type === 'CustomRegion') {
-    return 'i-material-symbols:polyline-outline-rounded'
+    return ICONS.customRegion
   }
   else if (props.type === 'GameBoundary') {
-    return 'i-material-symbols:globe'
+    return ICONS.world
   }
-  return 'material-symbols:question-mark-rounded'
+  return ICONS.undefined
 })
 
 function onClick() {
