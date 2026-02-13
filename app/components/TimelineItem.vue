@@ -21,7 +21,7 @@ const iconName = computed(() => {
     return ICONS.customRegion
   }
   else if (props.type === 'GameBoundary') {
-    return ICONS.world
+    return ICONS.geoRegion
   }
   return ICONS.undefined
 })

@@ -26,6 +26,18 @@ const items = ref<DropdownMenuItem[][]>([[
     onSelect: () => { state.value = State.ADDING_CUSTOM_REGION },
   },
   {
+    label: 'Geo Region',
+    type: 'link',
+    icon: ICONS.geoRegion,
+    onSelect: () => { state.value = State.ADDING_PINS },
+  },
+  {
+    label: 'GeoJSON Region',
+    type: 'link',
+    icon: ICONS.geoJsonRegion,
+    onSelect: () => { state.value = State.ADDING_GEOJSON_REGION },
+  },
+  {
     label: 'Pin',
     type: 'link',
     icon: ICONS.pin,
@@ -35,14 +47,8 @@ const items = ref<DropdownMenuItem[][]>([[
 </script>
 
 <template>
-  <UDropdownMenu
-    :items="items"
-    :content="{ side: 'left' }"
-  >
-    <MapOverlayButton
-      icon-name="material-symbols:add-circle-outline-rounded"
-      class="pointer-events-auto"
-    />
+  <UDropdownMenu :items="items" :content="{ side: 'left' }">
+    <MapOverlayButton icon-name="material-symbols:add-circle-outline-rounded" class="pointer-events-auto" />
   </UDropdownMenu>
 </template>
 

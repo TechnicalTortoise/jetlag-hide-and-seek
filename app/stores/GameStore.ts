@@ -48,8 +48,8 @@ export enum State {
   MODIFYING_THERMOMETER,
   ADDING_CUSTOM_REGION,
   MODIFYING_CUSTOM_REGION,
-  ADDING_GAME_BOUNDARY,
-  MODIFYING_GAME_BOUNDARY,
+  ADDING_GEOJSON_REGION,
+  MODIFYING_GEOJSON_REGION,
   ADDING_PINS,
   NULL,
 }
@@ -61,7 +61,7 @@ export const useGameStore = defineStore('game', () => {
   const state = ref(State.MAIN)
   const timelineShowing = ref(true)
   const questionIdBeingEdited = ref(-1)
-  const questionBeingEdited: Ref<Question | undefined> = ref(null)
+  const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
 
   function generateQuestionId(): number {
     return Date.now()
@@ -218,6 +218,7 @@ export const useGameStore = defineStore('game', () => {
       lnglatEnd,
       warmer,
     }
+    q.allInfoAvailable = true
     q.question = t
     setThermometerPolygon(q)
     onNewQuestionData()
@@ -480,6 +481,31 @@ export const useGameStore = defineStore('game', () => {
 
   }
 
+  function convertQuestionsToString() {
+    const questionsCopy = JSON.parse(JSON.stringify(questions.value))
+    questionsCopy.splice(questionsCopy.length - 1, 1)
+    questionsCopy.forEach((q: Question) => {
+      q.polygon = undefined
+    })
+    return JSON.stringify(questionsCopy, null, 2)
+  }
+
+  function setQuestionsFromString(str: string): boolean {
+    try {
+      questions.value = JSON.parse(str)
+      questions.value.forEach((q) => {
+        setQuestionPolygon(q)
+      })
+      addTimelineMarker()
+      onNewQuestionData()
+      return true
+    }
+    catch (err) {
+      console.error('Failed to load questions from clipboard, ', str, ', err=', err)
+      return false
+    }
+  }
+
   return {
     questions,
     resetGame,
@@ -500,6 +526,8 @@ export const useGameStore = defineStore('game', () => {
     questionBeingEdited,
     questionIdBeingEdited,
     timelineShowing,
+    convertQuestionsToString,
+    setQuestionsFromString,
   }
 }, {
   persist: {

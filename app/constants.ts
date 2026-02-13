@@ -3,8 +3,9 @@ export const ICONS = {
     thermometer: 'i-material-symbols:thermometer-outline',
     customRegion: 'i-material-symbols:polyline-outline-rounded',
     pin: 'i-material-symbols:location-on-outline-rounded',
-    world: 'i-material-symbols:globe',
+    geoRegion: 'i-material-symbols:globe',
     undefined: 'material-symbols:question-mark-rounded',
+    geoJsonRegion: 'material-symbols:shapes-outline',
 } as const
 
 export const UNITS = {
