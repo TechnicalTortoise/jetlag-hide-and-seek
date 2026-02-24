@@ -16,6 +16,7 @@ export const useMapStore = defineStore('map', () => {
   const hatchImageId = 'hatch-pattern'
   const hatchStrokeWidth = 4
   const hatchColour = '#2020BF'
+  const mapBearing = ref(0)
 
   function generateHatchSVG() {
     const w = 15
@@ -44,6 +45,10 @@ export const useMapStore = defineStore('map', () => {
       img.src = svgDataUrl
     })
     map.addImage(hatchImageId, img)
+
+    map.on('rotate', (_e) => {
+      mapBearing.value = map.getBearing()
+    })
   }
 
   function getMap() {
@@ -222,6 +227,7 @@ export const useMapStore = defineStore('map', () => {
   return {
     mapInstance,
     mapLoaded,
+    mapBearing,
     getMap,
     setMapInstance,
     onMapLoaded,

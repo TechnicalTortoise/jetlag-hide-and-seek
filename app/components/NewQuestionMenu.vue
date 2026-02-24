@@ -47,8 +47,14 @@ const items = ref<DropdownMenuItem[][]>([[
 </script>
 
 <template>
-  <UDropdownMenu :items="items" :content="{ side: 'left' }">
-    <MapOverlayButton icon-name="material-symbols:add-circle-outline-rounded" class="pointer-events-auto" />
+  <UDropdownMenu
+    :items="items"
+    :content="{ side: 'left' }"
+  >
+    <MapOverlayButton
+      icon-name="material-symbols:add-circle-outline-rounded"
+      class="pointer-events-auto"
+    />
   </UDropdownMenu>
 </template>
 

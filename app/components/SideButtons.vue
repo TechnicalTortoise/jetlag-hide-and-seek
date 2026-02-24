@@ -3,6 +3,7 @@ const gameStore = useGameStore()
 const mapStore = useMapStore()
 
 const { state } = storeToRefs(gameStore)
+const { mapBearing } = storeToRefs(mapStore)
 
 function toggleMeasuring() {
   if (state.value === State.MEASURING) {
@@ -29,7 +30,9 @@ function toggleTimeline() {
       <OptionsMenu />
       <MapOverlayButton
         icon-name="material-symbols:expand-circle-up-outline-rounded"
+        :icon-angle="-mapBearing"
         class="pointer-events-auto"
+        :ui="{}"
         @click="mapStore.resetOrientation()"
       />
       <NewQuestionMenu />

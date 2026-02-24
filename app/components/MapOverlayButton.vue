@@ -1,17 +1,18 @@
 <script lang="ts" setup>
-import { Icon } from '@iconify/vue'
-
-const props = defineProps<{
+const { iconName, iconAngle = 0 } = defineProps<{
   iconName: string
+  iconAngle?: number
 }>()
 </script>
 
 <template>
-  <UButton
-    class="text-4xl w-12 h-12 flex justify-center items-center z-100"
-    :icon="props.iconName"
-  />
+  <UButton class="text-4xl w-12 h-12 flex justify-center items-center z-100">
+    <UIcon
+      :name="iconName"
+      class="transition-transform duration-50 w-6"
+      :style="{ transform: `rotate(${iconAngle}deg)` }"
+    />
+  </UButton>
 </template>
 
-<!-- icon="i-material-symbols-measuring-tape-outline" -->
 <style></style>

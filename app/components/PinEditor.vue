@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
 import appConfig from '~/app.config'
-import { useMapStore } from '~/stores/MapStore'
-
 import { getRGB } from '~/colourUtils'
+
+import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -20,7 +20,7 @@ function onMarkerDrag() {
 }
 
 watch(mapStore, () => {
-  console.warn(getRGB(pinColour))
+  // console.warn(getRGB(pinColour))
   if (mapStore.mapLoaded) {
     const map = mapStore.getMap()
     map.on('click', onMapClick)
