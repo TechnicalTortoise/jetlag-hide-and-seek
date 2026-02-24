@@ -6,11 +6,9 @@ import { Marker } from 'maplibre-gl'
 import { getRGB, hexToRGBA } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
 import ExportDataForm from './ExportDataForm.vue'
-import DataInputForm from './ImportDataForm.vue'
 import ImportDataForm from './ImportDataForm.vue'
 
 const mapStore = useMapStore()
-const gameStore = useGameStore()
 
 const { coords, locatedAt, error, resume, pause } = useGeolocation()
 
@@ -19,6 +17,7 @@ let positionMarker: Marker | undefined
 
 const dataInputForm = useTemplateRef('dataInputForm')
 const dataExportForm = useTemplateRef('dataExportForm')
+const newGameModal = useTemplateRef('newGameModal')
 
 function createMarker() {
   const el = document.createElement('div')
@@ -89,7 +88,7 @@ const items = computed(() => [
     label: 'New game',
     type: 'link',
     icon: 'material-symbols:delete-outline-rounded',
-    onSelect: () => { gameStore.resetGame() },
+    onSelect: () => { newGameModal.value?.open() },
   },
   {
     label: 'Export Data',
@@ -125,6 +124,7 @@ const items = computed(() => [
 
   <ImportDataForm ref="dataInputForm" />
   <ExportDataForm ref="dataExportForm" />
+  <NewGameModal ref="newGameModal" />
 </template>
 
 <style></style>
