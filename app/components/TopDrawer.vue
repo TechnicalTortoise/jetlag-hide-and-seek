@@ -148,19 +148,4 @@ function deleteQuestion() {
   </UDrawer>
 </template>
 
-<style scoped>
-:deep([data-state="open"][data-direction="top"]) {
-  top: 0 !important;
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-  }
-
-  to {
-    transform: translateY(0);
-  }
-}
-</style>
+<style></style>

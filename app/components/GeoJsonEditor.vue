@@ -42,9 +42,12 @@ function onStartEditing() {
 async function readDataFromFile() {
   const filePath = '/WD_DEC_2025_UK_BGC_-6364930323688940360.geojson'
   try {
-    const data = await $fetch(filePath)
-    if ('features' in data) {
+    const data: object = await $fetch(filePath)
 
+    if ('features' in data) {
+      data.features.array.forEach((feature) => {
+        const nameField = 'WD25NM'
+      })
     }
 
     console.warn(data)

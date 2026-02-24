@@ -1,15 +1,26 @@
--When editing a question, should be able to cancel changes
--Add ability to make/remove pins
 -Add ability to import shapefiles and do region questions
--Make excluded area look like the show with the hatch pattern
+
+add ability to export polygons
+
+-Timeline marker should be I shaped and grey - should like draggable and not a button shape
+-Add + button to the end of the timeline
+-make all timeline items draggable
+
+- new game should have an "are you sure"
+
+- recenter map icon should rotate
+    - same button should center map on location if its available
+
+- new game menu, ask if you want location visible and unit preference. Save this, and can have a "dont show this again". Shown when starting up and there are no timeline items
+
 -Options menu:
     -Show location - get colour and marker looking better
+    - on get location, should recenter map
+    - move location showing logic into mapStore
     -Show satellite map or street map
 
--State persistance, especially important for going on a metro
-consistent pin colouring
+- move utils to utils folder
 
-pinia persistant state
 might need https for mobile
 chrome remote debugging
-define icons to use in a file somewhere
+

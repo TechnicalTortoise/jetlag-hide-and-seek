@@ -19,15 +19,23 @@ defineExpose({ mapInstance })
 function onMapLoaded() {
   mapStore.onMapLoaded()
   mapLoaded.value = true
+  // mapInstance.map?.setProjection({ type: 'globe' })
 }
 </script>
 
 <template>
   <MglMap
-    :map-style="style" :center="center" :zoom="zoom" :attribution-control="false" class="w-full h-full"
+    :map-style="style"
+    :center="center"
+    :zoom="zoom"
+    :attribution-control="false"
+    class="w-full h-full"
     @map:load="onMapLoaded"
   >
-    <MglNavigationControl :show-compass="false" :show-zoom="false" />
+    <MglNavigationControl
+      :show-compass="false"
+      :show-zoom="false"
+    />
   </MglMap>
 </template>
 
