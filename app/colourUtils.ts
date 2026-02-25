@@ -4,6 +4,7 @@ export function getRGB(color: [string, number]): string {
   const appConfig = useAppConfig()
   const colorName = appConfig.ui.colors[color[0]]
   const colorValue = colors[colorName]?.[color[1]]
+  console.warn(colorValue)
   return colorValue
 }
 

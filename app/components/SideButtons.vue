@@ -4,6 +4,7 @@ const mapStore = useMapStore()
 
 const { state } = storeToRefs(gameStore)
 const { mapBearing } = storeToRefs(mapStore)
+const userLocation = gameStore.userLocation
 
 function toggleMeasuring() {
   if (state.value === State.MEASURING) {
@@ -16,6 +17,16 @@ function toggleMeasuring() {
 
 function toggleTimeline() {
   gameStore.timelineShowing = !gameStore.timelineShowing
+}
+
+function onClickCompass() {
+  const map = mapStore.getMap()
+  if (map.getBearing() === 0) {
+    userLocation.moveMapToPosition()
+  }
+  else {
+    mapStore.resetOrientation()
+  }
 }
 </script>
 
@@ -33,7 +44,7 @@ function toggleTimeline() {
         :icon-angle="-mapBearing"
         class="pointer-events-auto"
         :ui="{}"
-        @click="mapStore.resetOrientation()"
+        @click="onClickCompass"
       />
       <NewQuestionMenu />
       <MapOverlayButton

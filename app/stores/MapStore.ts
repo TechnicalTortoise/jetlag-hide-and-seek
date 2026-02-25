@@ -220,8 +220,17 @@ export const useMapStore = defineStore('map', () => {
 
   function resetOrientation() {
     const map = getMap()
-    map.setBearing(0)
-    map.setPitch(0)
+    map.flyTo({
+      bearing: 0,
+      pitch: 0,
+    })
+  }
+
+  function setPosition(lnglat: [number, number]) {
+    const map = getMap()
+    map.flyTo({
+      center: lnglat,
+    })
   }
 
   return {
@@ -239,5 +248,6 @@ export const useMapStore = defineStore('map', () => {
     invertGeometry,
     moveMarker,
     drawGamePolygon,
+    setPosition,
   }
 })

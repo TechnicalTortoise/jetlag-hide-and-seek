@@ -47,7 +47,7 @@ onMounted(async () => {
           />
           <div
             v-else
-            class="w-8 h-16 bg-red-400 handle rounded-md"
+            class="w-8 h-16 bg-gray-500 handle rounded-md"
           />
         </div>
       </div>

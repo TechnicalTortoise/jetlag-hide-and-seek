@@ -63,6 +63,8 @@ export const useGameStore = defineStore('game', () => {
   const questionIdBeingEdited = ref(-1)
   const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
 
+  const userLocation = useUserLocation()
+
   function generateQuestionId(): number {
     return Date.now()
   }
@@ -528,6 +530,7 @@ export const useGameStore = defineStore('game', () => {
     timelineShowing,
     convertQuestionsToString,
     setQuestionsFromString,
+    userLocation,
   }
 }, {
   persist: {
