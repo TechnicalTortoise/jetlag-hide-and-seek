@@ -1,12 +1,13 @@
 <script lang="ts" setup>
+import type { Feature, FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
+
 import type { MapMouseEvent } from 'maplibre-gl'
+import * as turf from '@turf/turf'
 
+import { GeoJSONFeature } from 'maplibre-gl'
 import { getRGB } from '~/colourUtils'
-
 import { useMapStore } from '~/stores/MapStore'
 import TopDrawer from './TopDrawer.vue'
-
-const pinColour: [string, number] = ['tertiary', 500]
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
@@ -16,6 +17,12 @@ const topDrawerRef = ref<InstanceType<typeof TopDrawer>>()
 const active = computed(() => {
   return topDrawerRef.value?.isActive
 })
+
+const regionNames: Ref<[string]> = ref([' '])
+const selectedRegionName = ref('')
+let polygons: { [name: string]: GeoJsonProperties }
+let selectedPolygon: GeoJsonProperties
+const hit = ref(true)
 
 function resetFn() {
 
@@ -33,24 +40,73 @@ function onStartEditing() {
   resetFn()
 }
 
-// function updateRadar() {
-//   if (questionBeingEdited.value !== undefined && lnglat !== undefined) {
-//     gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
-//   }
-// }
+function onSelectRegionName() {
+  const p = polygons[selectedRegionName.value]
+  if (p !== undefined) {
+    selectedPolygon = p
+
+    if (questionBeingEdited.value === undefined) {
+      console.warn('Undefined question')
+    }
+    else {
+      updateQuestion()
+    }
+  }
+}
+
+function unwrapMultiPolygon(feature: Feature<MultiPolygon>): Feature<Polygon> {
+  return {
+    ...feature,
+    geometry: {
+      type: 'Polygon',
+      coordinates: feature.geometry.coordinates[0],
+    },
+  }
+}
 
 async function readDataFromFile() {
-  const filePath = '/WD_DEC_2025_UK_BGC_-6364930323688940360.geojson'
+  const filePath = '/limites-administratives-des-communes-en-region-de-bruxelles-capitale.geojson'
   try {
-    const data: object = await $fetch(filePath)
+    const data: FeatureCollection = await $fetch(filePath)
+    // console.warn()
+    const nameField = 'name_fr'
+    // const props = data.features[0].properties
+    // for (const key in props) {
+    //   if (/(name|nm)/i.test(key)) {
+    //     nameFields.push(key)
+    //   }
+    // }
+    // console.warn('Found possible name fields: ', nameFields)
 
-    if ('features' in data) {
-      data.features.array.forEach((feature) => {
-        const nameField = 'WD25NM'
-      })
-    }
+    // data.features.array.forEach((feature) => {
 
-    console.warn(data)
+    //   // const nameField = 'name_fr'
+    // })
+
+    // console.warn(data)
+
+    // temp: combine all regions into one to save out
+    // const newFeatures: FeatureCollection = new turf.featureCollection([])
+    // data.features.forEach((feature) => {
+    //   newFeatures.features.push(turf.buffer(feature, 5, { units: 'meters' }))
+    // })
+    // const combined = turf.union(newFeatures)
+    // console.warn(combined)
+
+    regionNames.value = []
+    polygons = {}
+    data.features.forEach((feature) => {
+      if ('properties' in feature) {
+        if (nameField in feature.properties) {
+          const name = feature.properties[nameField]
+          regionNames.value.push(name)
+          polygons[name] = feature
+        }
+      }
+    })
+    regionNames.value.sort()
+    console.warn(polygons)
+    // console.warn(regionNames.value)
   }
   catch (error) {
     console.error('Failed to load JSON:', error)
@@ -58,7 +114,17 @@ async function readDataFromFile() {
 }
 
 async function onTestClick() {
-  console.warn(await readDataFromFile())
+  await readDataFromFile()
+}
+
+watch(hit, () => {
+  updateQuestion()
+})
+
+function updateQuestion() {
+  if (questionBeingEdited.value !== undefined) {
+    gameStore.updateGeoJsonRegion(questionBeingEdited.value, selectedRegionName.value, hit.value, selectedPolygon)
+  }
 }
 </script>
 
@@ -71,13 +137,25 @@ async function onTestClick() {
     :reset-fn="resetFn"
     :on-map-click-fn="onMapClick"
     :all-info-filled-fn="allInfoFilled"
-    :create-new-question="gameStore.addRadar"
+    :create-new-question="gameStore.addGeoJsonRegion"
     :on-start-editing="onStartEditing"
   >
     <template #MainContentSlot>
       <UButton
         label="Blub"
         @click="onTestClick"
+      />
+      <USelectMenu
+        v-model="selectedRegionName"
+        :items="regionNames"
+        class="w-full"
+        @update:model-value="onSelectRegionName"
+      />
+      <UCheckbox
+        v-model="hit"
+        label="Hit"
+        indicator="end"
+        class="w-min"
       />
     </template>
   </TopDrawer>

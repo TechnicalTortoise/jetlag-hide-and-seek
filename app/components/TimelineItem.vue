@@ -23,6 +23,9 @@ const iconName = computed(() => {
   else if (props.type === 'GameBoundary') {
     return ICONS.geoRegion
   }
+  else if (props.type === 'GeoJsonRegion') {
+    return ICONS.geoJsonRegion
+  }
   return ICONS.undefined
 })
 
@@ -34,29 +37,34 @@ function onClick() {
   }
   switch (q.type) {
     case 'Radar':
-      {
-        gameStore.state = State.MODIFYING_RADAR
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_RADAR
+      break
+    }
     case 'Thermometer':
-      {
-        gameStore.state = State.MODIFYING_THERMOMETER
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_THERMOMETER
+      break
+    }
     case 'CustomRegion':
-      {
-        gameStore.state = State.MODIFYING_CUSTOM_REGION
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_CUSTOM_REGION
+      break
+    }
     case 'GameBoundary':
-      {
-        gameStore.state = State.MODIFYING_GAME_BOUNDARY
-        break
-      }
+    {
+      gameStore.state = State.MODIFYING_GAME_BOUNDARY
+      break
+    }
+    case 'GeoJsonRegion':
+    {
+      gameStore.state = State.MODIFYING_GEOJSON_REGION
+      break
+    }
     default:
-      {
-        console.warn(`Trying to modify question type ${q.type}, not yet handled`)
-      }
+    {
+      console.warn(`Trying to modify question type ${q.type}, not yet handled`)
+    }
   }
   // gameStore.removeQuestion(props.id)
 }
@@ -64,8 +72,12 @@ function onClick() {
 
 <template>
   <div class="w-18 h-20 float-left flex items-center justify-center">
-    <UButton class="w-16 h-16 justify-center flex-col items-center gap-0" :icon="iconName"
-      :color="gameStore.questionIdBeingEdited === props.id ? 'secondary' : 'primary'" @click="onClick">
+    <UButton
+      class="w-16 h-16 justify-center flex-col items-center gap-0"
+      :icon="iconName"
+      :color="gameStore.questionIdBeingEdited === props.id ? 'secondary' : 'primary'"
+      @click="onClick"
+    >
       <span class="text-s">{{ props.text }}</span>
     </UButton>
   </div>

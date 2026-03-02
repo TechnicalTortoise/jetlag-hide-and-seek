@@ -64,42 +64,115 @@ export const useMapStore = defineStore('map', () => {
   function setMapInstance(theMapInstance: MapInstance) {
     mapInstance.value = theMapInstance
   }
-  function invertGeometry(feature: GeoJsonProperties) {
-    const coords = feature.geometry.coordinates
+  const WORLD_BOUNDARY = [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]]
 
-    // Check if already inverted (first ring is the world boundary)
-    const firstRing = coords[0]
-    const isWorldBoundary
-      = firstRing.length === 5
-        && firstRing[0][0] === -180 && firstRing[0][1] === -90
-        && firstRing[1][0] === 180 && firstRing[1][1] === -90
-        && firstRing[2][0] === 180 && firstRing[2][1] === 90
-        && firstRing[3][0] === -180 && firstRing[3][1] === 90
-
-    if (isWorldBoundary && coords.length > 1) {
-      // Already inverted - extract the original polygon (second ring)
-      return {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [coords[1]], // Return the hole as the main polygon
-        },
-      }
-    }
-    else {
-      // Not inverted - wrap with world boundary
-      return {
-        type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
-            coords[0],
-          ],
-        },
-      }
-    }
+  function isWorldBoundaryRing(ring: number[][]): boolean {
+    return (
+      ring.length === 5
+      && ring[0][0] === -180 && ring[0][1] === -90
+      && ring[1][0] === 180 && ring[1][1] === -90
+      && ring[2][0] === 180 && ring[2][1] === 90
+      && ring[3][0] === -180 && ring[3][1] === 90
+    )
   }
+
+  function invertGeometry(feature: GeoJsonProperties) {
+    const { type, coordinates: coords } = feature.geometry
+
+    if (type === 'Polygon') {
+      const firstRing = coords[0]
+
+      if (isWorldBoundaryRing(firstRing) && coords.length > 1) {
+        // Already inverted — return original polygon(s) as MultiPolygon if multiple holes
+        const rings = coords.slice(1)
+        return {
+          type: 'Feature',
+          geometry: rings.length === 1
+            ? { type: 'Polygon', coordinates: [rings[0]] }
+            : { type: 'MultiPolygon', coordinates: rings.map(r => [r]) },
+        }
+      }
+      else {
+        // Invert — wrap with world boundary, original ring becomes a hole
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [WORLD_BOUNDARY, coords[0]],
+          },
+        }
+      }
+    }
+
+    if (type === 'MultiPolygon') {
+      // Each polygon in the multi becomes a hole in the world boundary
+      const firstRing = coords[0][0]
+
+      if (isWorldBoundaryRing(firstRing)) {
+        // Already inverted — reconstruct MultiPolygon from the holes
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'MultiPolygon',
+            // Each sub-array after index 0 was a hole, restore as individual polygons
+            coordinates: coords.map(polygon => [polygon[1]]).filter(p => p[0]),
+          },
+        }
+      }
+      else {
+        // Invert — one Polygon with world boundary + all outer rings as holes
+        return {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              WORLD_BOUNDARY,
+              ...coords.map(polygon => polygon[0]), // outer ring of each polygon
+            ],
+          },
+        }
+      }
+    }
+
+    // Fallback — return as-is for unsupported geometry types
+    return feature
+  }
+  // function invertGeometry(feature: GeoJsonProperties) {
+  //   const coords = feature.geometry.coordinates
+
+  //   // Check if already inverted (first ring is the world boundary)
+  //   const firstRing = coords[0]
+  //   const isWorldBoundary
+  //     = firstRing.length === 5
+  //       && firstRing[0][0] === -180 && firstRing[0][1] === -90
+  //       && firstRing[1][0] === 180 && firstRing[1][1] === -90
+  //       && firstRing[2][0] === 180 && firstRing[2][1] === 90
+  //       && firstRing[3][0] === -180 && firstRing[3][1] === 90
+
+  //   if (isWorldBoundary && coords.length > 1) {
+  //     // Already inverted - extract the original polygon (second ring)
+  //     return {
+  //       type: 'Feature',
+  //       geometry: {
+  //         type: 'Polygon',
+  //         coordinates: [coords[1]], // Return the hole as the main polygon
+  //       },
+  //     }
+  //   }
+  //   else {
+  //     // Not inverted - wrap with world boundary
+  //     return {
+  //       type: 'Feature',
+  //       geometry: {
+  //         type: 'Polygon',
+  //         coordinates: [
+  //           [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
+  //           coords[0],
+  //         ],
+  //       },
+  //     }
+  //   }
+  // }
 
   function removeGamePolygon() {
     const map = getMap()

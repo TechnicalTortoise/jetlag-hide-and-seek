@@ -10,8 +10,8 @@ pinia.use(piniaPluginPersistedstate)
 
 // type guards
 export interface Question {
-  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion' | 'GameBoundary'
-  question: Radar | undefined | Thermometer | CustomRegion | GameBoundary
+  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion' | 'GameBoundary' | 'GeoJsonRegion'
+  question: Radar | undefined | Thermometer | CustomRegion | GameBoundary | GeoJsonRegion
   allInfoAvailable: boolean
   timelineText: string
   id: number
@@ -37,6 +37,11 @@ export interface CustomRegion {
 
 export interface GameBoundary {
   name: string
+}
+
+export interface GeoJsonRegion {
+  name: string
+  hit: boolean
 }
 
 export enum State {
@@ -399,6 +404,53 @@ export const useGameStore = defineStore('game', () => {
     onNewQuestionData()
   }
 
+  function addGeoJsonRegion(): Question {
+    const gj: GeoJsonRegion = {
+      name: '',
+      hit: true,
+    }
+    const q: Question = {
+      type: 'GeoJsonRegion',
+      id: generateQuestionId(),
+      question: gj,
+      polygon: undefined,
+      timelineText: 'New GeoJSON',
+      allInfoAvailable: false,
+    }
+    questions.value.push(q)
+    moveTimelineMarkerToEnd()
+    onNewQuestionData()
+    // returning q does not work properly, but this does
+    return questions.value.at(-2)
+  }
+
+  function updateGeoJsonRegion(q: Question, name: string, hit: boolean, poly: GeoJsonProperties) {
+    if (q.type !== 'GeoJsonRegion') {
+      return
+    }
+    const gj: GeoJsonRegion = {
+      name,
+      hit,
+    }
+    q.allInfoAvailable = true
+    q.question = gj
+    setGeoJsonRegionPolygon(q)
+    q.polygon = gj.hit ? poly : mapStore.invertGeometry(poly)
+    onNewQuestionData()
+  }
+
+  // actually just sets timeline text
+  function setGeoJsonRegionPolygon(q: Question) {
+    if (q.type !== 'GeoJsonRegion') {
+      return
+    }
+    const gj: GeoJsonRegion = q.question
+
+    // const inOrOut = gj.hit ? 'In' : 'Not in'
+    // q.timelineText = `${inOrOut} ${gj.name}`
+    q.timelineText = gj.name
+  }
+
   function setQuestionPolygon(q: Question) {
     if (q.type === 'Radar') {
       setRadarPolygon(q)
@@ -488,7 +540,10 @@ export const useGameStore = defineStore('game', () => {
     const questionsCopy = JSON.parse(JSON.stringify(questions.value))
     questionsCopy.splice(questionsCopy.length - 1, 1)
     questionsCopy.forEach((q: Question) => {
-      q.polygon = undefined
+      if (q.type !== 'GeoJsonRegion') {
+        // need to save polygons for this case
+        q.polygon = undefined
+      }
     })
     return JSON.stringify(questionsCopy, null, 2)
   }
@@ -521,6 +576,8 @@ export const useGameStore = defineStore('game', () => {
     updateCustomRegion,
     addGameBoundary,
     updateGameBoundary,
+    addGeoJsonRegion,
+    updateGeoJsonRegion,
     updateQuestion: setQuestionPolygon,
     timelineMarkerIndex,
     state,
@@ -536,6 +593,6 @@ export const useGameStore = defineStore('game', () => {
 }, {
   persist: {
     storage: typeof window !== 'undefined' ? localStorage : undefined,
-    paths: ['questions'],
+    paths: ['questions', 'userLocation'],
   },
 })
