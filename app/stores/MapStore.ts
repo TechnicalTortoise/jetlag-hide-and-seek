@@ -8,7 +8,7 @@ import { defineStore } from 'pinia'
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
-  const markers: { [id: string]: Marker } = {}
+  let markers: { [id: string]: Marker } = {}
   const sourceId = 'GamePolygonSource'
   const fillLayerId = 'GamePolygonLayerFill'
   const outlineLayerId = 'GamePolygonLayerOutline'
@@ -213,6 +213,10 @@ export const useMapStore = defineStore('map', () => {
     return markers[id]
   }
 
+  function clearMarkers() {
+    markers = {}
+  }
+
   function setBearing(bearing: number) {
     const map = getMap()
     map.setBearing(bearing)
@@ -243,6 +247,7 @@ export const useMapStore = defineStore('map', () => {
     addMarker,
     removeMarker,
     getMarker,
+    clearMarkers,
     setBearing,
     resetOrientation,
     invertGeometry,

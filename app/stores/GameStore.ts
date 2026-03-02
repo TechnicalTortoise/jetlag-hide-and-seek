@@ -474,6 +474,7 @@ export const useGameStore = defineStore('game', () => {
   })
 
   function resetGame() {
+    mapStore.clearMarkers()
     questions.value.splice(0, questions.value.length)
     addTimelineMarker()
     onNewQuestionData()

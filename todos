@@ -5,18 +5,14 @@ add ability to export polygons
 -Timeline marker should be I shaped and grey - should like draggable and not a button shape
 -Add + button to the end of the timeline
 
-- recenter map button should center map on location if its available
-
 - new game menu, ask if you want location visible and unit preference. Save this, and can have a "dont show this again". Shown when starting up and there are no timeline items
 
 -Options menu:
-    -Show location - get colour and marker looking better
-    - on get location, should recenter map
-    - move location showing logic into mapStore
     -Show satellite map or street map
+
+- pins are not persistent or cleared on new game
 
 - move utils to utils folder
 
 might need https for mobile
 chrome remote debugging
-
