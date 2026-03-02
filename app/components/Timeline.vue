@@ -47,8 +47,12 @@ onMounted(async () => {
           />
           <div
             v-else
-            class="w-8 h-16 bg-gray-500 handle rounded-md"
-          />
+            class="w-6 h-16 handle flex flex-col items-center"
+          >
+            <div class="w-6 h-2 bg-gray-500 rounded-sm" />
+            <div class="w-2 h-12 bg-gray-500 " />
+            <div class="w-6 h-2 bg-gray-500 rounded-sm" />
+          </div>
         </div>
       </div>
     </Transition>
