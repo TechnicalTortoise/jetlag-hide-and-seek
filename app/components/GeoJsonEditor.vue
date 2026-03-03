@@ -23,6 +23,7 @@ const selectedRegionName = ref('')
 let polygons: { [name: string]: GeoJsonProperties }
 let selectedPolygon: GeoJsonProperties
 const hit = ref(true)
+const fileInput = ref(null)
 
 function resetFn() {
 
@@ -126,6 +127,21 @@ function updateQuestion() {
     gameStore.updateGeoJsonRegion(questionBeingEdited.value, selectedRegionName.value, hit.value, selectedPolygon)
   }
 }
+
+async function onFileChanged(event) {
+  const file = event.target.files[0]
+  if (!file) {
+    return
+  }
+  try {
+    const text = await file.text()
+    const data = JSON.parse(text)
+    console.warn(data)
+  }
+  catch {
+    console.error('Failed to parse file')
+  }
+}
 </script>
 
 <template>
@@ -156,6 +172,20 @@ function updateQuestion() {
         label="Hit"
         indicator="end"
         class="w-min"
+      />
+      <!-- <UFileUpload label="Upload GeoJSON file containing region polygon(s)" /> -->
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".geojson,.json,.txt"
+        hidden="true"
+        @change="onFileChanged"
+      >
+      Upload GeoJSON file containing region polygon(s)
+      <br>
+      <UButton
+        label="Select file"
+        @click="fileInput.click()"
       />
     </template>
   </TopDrawer>

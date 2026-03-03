@@ -25,5 +25,6 @@ const map = useTemplateRef('map')
     <GeoJsonEditor />
     <!-- <GameBoundarySelectionMenu /> -->
     <SideButtons />
+    <UploadGeoJsonModal />
   </div>
 </template>
