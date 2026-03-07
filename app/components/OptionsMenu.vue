@@ -1,16 +1,32 @@
 <script lang="ts" setup>
 import { RegionCollectionManagerModal, UploadGeoJsonModal } from '#components'
 import { ICONS } from '~/constants'
-import ExportDataForm from './ExportGameForm.vue'
-import ImportDataForm from './ImportGameForm.vue'
 
 const gameStore = useGameStore()
 
-const dataInputForm = useTemplateRef('dataInputForm')
-const dataExportForm = useTemplateRef('dataExportForm')
 const newGameModal = useTemplateRef('newGameModal')
 const overlay = useOverlay()
 const uploadGeoJsonModal = overlay.create(RegionCollectionManagerModal)
+
+const gameFileInput = ref(null)
+const gameFileCurrentlyUploading = ref(false)
+
+async function onGameFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) {
+    return
+  }
+  try {
+    gameFileCurrentlyUploading.value = true
+    const text = await file.text()
+    gameStore.importGameFromString(text)
+  }
+  catch {
+    console.error('Failed to parse file')
+    // todo show an error
+  }
+  gameFileCurrentlyUploading.value = false
+}
 
 const items = computed(() => [
   {
@@ -33,18 +49,14 @@ const items = computed(() => [
     label: 'Export Game',
     icon: 'i-material-symbols:file-export-outline-rounded',
     onSelect: () => {
-      if (dataExportForm.value) {
-        dataExportForm.value.open()
-      }
+      downloadFile(gameStore.exportGameToString())
     },
   },
   {
     label: 'Import Game',
     icon: 'i-material-symbols:file-open-outline',
     onSelect: () => {
-      if (dataInputForm.value) {
-        dataInputForm.value.open()
-      }
+      gameFileInput.value.click()
     },
   },
   {
@@ -67,10 +79,14 @@ const items = computed(() => [
       class="pointer-events-auto"
     />
   </UDropdownMenu>
-
-  <ImportDataForm ref="dataInputForm" />
-  <ExportDataForm ref="dataExportForm" />
   <NewGameModal ref="newGameModal" />
+  <input
+    ref="gameFileInput"
+    type="file"
+    accept=".json"
+    hidden="true"
+    @change="onGameFileUpload"
+  >
 </template>
 
 <style></style>
