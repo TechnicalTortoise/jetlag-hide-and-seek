@@ -47,11 +47,9 @@ onMounted(async () => {
           />
           <div
             v-else
-            class="w-6 h-16 handle flex flex-col items-center"
+            class="w-4 h-16 handle flex flex-col items-center"
           >
-            <div class="w-6 h-2 bg-gray-500 rounded-sm" />
-            <div class="w-2 h-12 bg-gray-500 " />
-            <div class="w-6 h-2 bg-gray-500 rounded-sm" />
+            <div class="w-2 h-16 bg-gray-500 rounded-xs " />
           </div>
         </div>
       </div>
