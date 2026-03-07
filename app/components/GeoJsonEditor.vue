@@ -27,7 +27,8 @@ const regionNames: Ref<string[]> = computed(() => {
 const hit = ref(true)
 
 function resetFn() {
-
+  // selectedRegionCollectionName.value = ''
+  selectedRegionName.value = ''
 }
 
 function onMapClick(e: MapMouseEvent) {
@@ -77,7 +78,7 @@ function onSelectRegionCollection() {
 <template>
   <TopDrawer
     ref="topDrawerRef"
-    name="GeoJSON Region"
+    name="Geographic Region"
     :adding-state="State.ADDING_GEOJSON_REGION"
     :modifying-state="State.MODIFYING_GEOJSON_REGION"
     :reset-fn="resetFn"
@@ -91,12 +92,14 @@ function onSelectRegionCollection() {
         v-model="selectedRegionCollectionName"
         :items="regionCollections.map((rc) => rc.name)"
         class="w-full"
+        placeholder="Select region collection"
         @update:model-value="onSelectRegionCollection"
       />
       <USelectMenu
         v-model="selectedRegionName"
         :items="regionNames"
         class="w-full"
+        placeholder="Select region"
         @update:model-value="onSelectRegion"
       />
       <UCheckbox

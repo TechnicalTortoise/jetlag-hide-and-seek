@@ -78,7 +78,9 @@ function onClick() {
       :color="gameStore.questionIdBeingEdited === props.id ? 'secondary' : 'primary'"
       @click="onClick"
     >
-      <span class="text-s">{{ props.text }}</span>
+      <div class="flex items-center justify-center w-16 h-8 text-xs leading-none">
+        {{ props.text }}
+      </div>
     </UButton>
   </div>
 </template>

@@ -119,7 +119,9 @@ function deleteQuestion() {
     :title="title"
   >
     <template #body>
-      <slot name="MainContentSlot" />
+      <div class="flex flex-col gap-4">
+        <slot name="MainContentSlot" />
+      </div>
     </template>
 
     <template #footer>

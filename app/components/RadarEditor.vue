@@ -126,22 +126,23 @@ function updateRadar() {
     :on-start-editing="onStartEditing"
   >
     <template #MainContentSlot>
-      {{ positionString }}
-      <br>
-      Radius:
-      <UInputNumber
-        v-model="radiusKm"
-        :format-options="{
-          minimumFractionDigits: 1,
-          style: 'unit',
-          unit: 'kilometer',
-        }"
-        :step-snapping="false"
-        :increment="true"
-        :decrement="true"
-        :min="0"
-      />
-
+      <div>
+        {{ positionString }}
+      </div>
+      <UFormField label="Radius">
+        <UInputNumber
+          v-model="radiusKm"
+          :format-options="{
+            minimumFractionDigits: 1,
+            style: 'unit',
+            unit: 'kilometer',
+          }"
+          :step-snapping="false"
+          :increment="true"
+          :decrement="true"
+          :min="0"
+        />
+      </UFormField>
       <UCheckbox
         v-model="hit"
         label="Hit"

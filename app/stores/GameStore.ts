@@ -423,7 +423,7 @@ export const useGameStore = defineStore('game', () => {
       id: generateQuestionId(),
       question: gj,
       polygon: undefined,
-      timelineText: 'New GeoJSON',
+      timelineText: 'New Geographic Region',
       allInfoAvailable: false,
     }
     questions.value.push(q)

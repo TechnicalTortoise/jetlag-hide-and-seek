@@ -32,7 +32,7 @@ const items = ref<DropdownMenuItem[][]>([[
   //   onSelect: () => { state.value = State.ADDING_PINS },
   // },
   {
-    label: 'GeoJSON Region',
+    label: 'Geographic Region',
     type: 'link',
     icon: ICONS.geoJsonRegion,
     onSelect: () => { state.value = State.ADDING_GEOJSON_REGION },
