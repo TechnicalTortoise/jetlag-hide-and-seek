@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import type { Feature, FeatureCollection } from 'geojson'
 
+const emit = defineEmits<{ close: [boolean] }>()
+
 const gameStore = useGameStore()
 const { regionCollections } = storeToRefs(gameStore)
-const isOpen = ref(true)
+const isOpen = ref(false)
 const fileInput = ref(null)
 const possibleNameFields = ref([' '])
 const chosenNameField = ref(' ')
@@ -118,23 +120,24 @@ function onSaveRegionCollection() {
     return
   }
   regionCollections.value.push({ name, featureCollection: cleansedData })
+  emit('close', true)
 }
 </script>
 
 <template>
-  <input
-    ref="fileInput"
-    type="file"
-    accept=".geojson,.json,.txt"
-    hidden="true"
-    @change="onFileChanged"
-  >
   <UModal
     v-model:open="isOpen"
     title="Load GeoJSON region set"
     :dismissible="false"
   >
     <template #body>
+      <input
+        ref="fileInput"
+        type="file"
+        accept=".geojson,.json,.txt"
+        hidden="true"
+        @change="onFileChanged"
+      >
       <div class="flex flex-col gap-4">
         <div>
           Upload a GeoJSON file which contains polygon(s) to use later in the game.

@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { RegionCollectionManagerModal, UploadGeoJsonModal } from '#components'
+import { ICONS } from '~/constants'
 import ExportDataForm from './ExportGameForm.vue'
 import ImportDataForm from './ImportGameForm.vue'
 
@@ -7,6 +9,8 @@ const gameStore = useGameStore()
 const dataInputForm = useTemplateRef('dataInputForm')
 const dataExportForm = useTemplateRef('dataExportForm')
 const newGameModal = useTemplateRef('newGameModal')
+const overlay = useOverlay()
+const uploadGeoJsonModal = overlay.create(RegionCollectionManagerModal)
 
 const items = computed(() => [
   {
@@ -41,6 +45,13 @@ const items = computed(() => [
       if (dataInputForm.value) {
         dataInputForm.value.open()
       }
+    },
+  },
+  {
+    label: 'Manage Region Collections',
+    icon: ICONS.geoJsonRegion,
+    onSelect: () => {
+      uploadGeoJsonModal.open()
     },
   },
 ])

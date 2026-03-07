@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
-import CustomPolygonEditor from '~/components/CustomPolygonEditor.vue'
-
 const map = useTemplateRef('map')
 </script>
 
@@ -23,8 +20,6 @@ const map = useTemplateRef('map')
     <PinEditor />
     <CustomRegionEditor />
     <GeoJsonEditor />
-    <!-- <GameBoundarySelectionMenu /> -->
     <SideButtons />
-    <UploadGeoJsonModal />
   </div>
 </template>
