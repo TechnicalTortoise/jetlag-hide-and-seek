@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import ExportDataForm from './ExportDataForm.vue'
-import ImportDataForm from './ImportDataForm.vue'
+import ExportDataForm from './ExportGameForm.vue'
+import ImportDataForm from './ImportGameForm.vue'
 
 const gameStore = useGameStore()
 
@@ -26,7 +26,7 @@ const items = computed(() => [
     onSelect: () => { newGameModal.value?.open() },
   },
   {
-    label: 'Export Data',
+    label: 'Export Game',
     icon: 'i-material-symbols:file-export-outline-rounded',
     onSelect: () => {
       if (dataExportForm.value) {
@@ -35,7 +35,7 @@ const items = computed(() => [
     },
   },
   {
-    label: 'Import Data',
+    label: 'Import Game',
     icon: 'i-material-symbols:file-open-outline',
     onSelect: () => {
       if (dataInputForm.value) {

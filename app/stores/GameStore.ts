@@ -1,8 +1,9 @@
 import type { FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
+import type { ShallowRef } from 'vue'
 import * as turf from '@turf/turf'
 import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import { useMapStore } from '~/stores/MapStore'
 
 const pinia = createPinia()
@@ -59,6 +60,11 @@ export enum State {
   NULL,
 }
 
+export interface RegionCollection {
+  name: string
+  featureCollection: FeatureCollection
+}
+
 export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
@@ -67,6 +73,7 @@ export const useGameStore = defineStore('game', () => {
   const timelineShowing = ref(true)
   const questionIdBeingEdited = ref(-1)
   const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
+  const regionCollections: Ref<RegionCollections[]> = ref([])
 
   const userLocation = useUserLocation()
 
@@ -589,10 +596,12 @@ export const useGameStore = defineStore('game', () => {
     convertQuestionsToString,
     setQuestionsFromString,
     userLocation,
+    regionCollections,
   }
 }, {
   persist: {
+    // pick: ['questions', 'userLocation', 'regionCollections'],
     storage: typeof window !== 'undefined' ? localStorage : undefined,
-    paths: ['questions', 'userLocation'],
+
   },
 })

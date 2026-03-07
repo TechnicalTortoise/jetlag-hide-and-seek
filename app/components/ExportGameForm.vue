@@ -18,7 +18,7 @@ defineExpose({
 <template>
   <UModal
     v-model:open="opened"
-    title="Export Data"
+    title="Export Game"
   >
     <template #body>
       <UTextarea

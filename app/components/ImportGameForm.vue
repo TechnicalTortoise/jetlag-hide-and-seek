@@ -34,7 +34,7 @@ function onClickAccept() {
 <template>
   <UModal
     v-model:open="opened"
-    title="Import Data"
+    title="Import Game"
   >
     <template #body>
       <UTextarea
