@@ -42,6 +42,7 @@ export interface GameBoundary {
 
 export interface GeoJsonRegion {
   name: string
+  regionCollectionName: string // todo make sure to load this in the editor when opening editor
   hit: boolean
 }
 
@@ -415,6 +416,7 @@ export const useGameStore = defineStore('game', () => {
     const gj: GeoJsonRegion = {
       name: '',
       hit: true,
+      regionCollectionName: '',
     }
     const q: Question = {
       type: 'GeoJsonRegion',
@@ -431,30 +433,50 @@ export const useGameStore = defineStore('game', () => {
     return questions.value.at(-2)
   }
 
-  function updateGeoJsonRegion(q: Question, name: string, hit: boolean, poly: GeoJsonProperties) {
+  function updateGeoJsonRegion(q: Question, name: string, regionCollectionName: string, hit: boolean) {
     if (q.type !== 'GeoJsonRegion') {
       return
     }
     const gj: GeoJsonRegion = {
       name,
+      regionCollectionName,
       hit,
     }
     q.allInfoAvailable = true
     q.question = gj
     setGeoJsonRegionPolygon(q)
-    q.polygon = gj.hit ? poly : mapStore.invertGeometry(poly)
     onNewQuestionData()
   }
 
-  // actually just sets timeline text
   function setGeoJsonRegionPolygon(q: Question) {
     if (q.type !== 'GeoJsonRegion') {
       return
     }
     const gj: GeoJsonRegion = q.question
+    // find region collection
+    const regionCollection: RegionCollection | undefined = regionCollections.value.find((rc) => {
+      return rc.name === gj.regionCollectionName
+    })
+    if (!regionCollection) {
+      return
+    }
+    // find region
 
-    // const inOrOut = gj.hit ? 'In' : 'Not in'
-    // q.timelineText = `${inOrOut} ${gj.name}`
+    const poly = regionCollection.featureCollection.features.find((f) => {
+      if (!f.properties) {
+        return false
+      }
+      if (!f.properties.name) {
+        return false
+      }
+      return f.properties.name === gj.name
+    })
+    if (!poly) {
+      return
+    }
+
+    q.polygon = gj.hit ? poly : mapStore.invertGeometry(poly)
+
     q.timelineText = gj.name
   }
 
@@ -467,6 +489,9 @@ export const useGameStore = defineStore('game', () => {
     }
     else if (q.type === 'CustomRegion') {
       setCustomRegionPolygon(q)
+    }
+    else if (q.type === 'GeoJsonRegion') {
+      setGeoJsonRegionPolygon(q)
     }
     else {
       console.warn('Trying to set question polygon for unhandled type ', q.type)
@@ -543,21 +568,26 @@ export const useGameStore = defineStore('game', () => {
 
   }
 
-  function convertQuestionsToString() {
+  function exportGameToString() {
     const questionsCopy = JSON.parse(JSON.stringify(questions.value))
     questionsCopy.splice(questionsCopy.length - 1, 1)
     questionsCopy.forEach((q: Question) => {
-      if (q.type !== 'GeoJsonRegion') {
-        // need to save polygons for this case
-        q.polygon = undefined
-      }
+      q.polygon = undefined
     })
-    return JSON.stringify(questionsCopy, null, 2)
+
+    const gameObject = {
+      questions: questionsCopy,
+      regionCollections: regionCollections.value,
+    }
+    const json = JSON.stringify(gameObject)
+    return json
   }
 
-  function setQuestionsFromString(str: string): boolean {
+  function importGameFromString(str: string): boolean {
     try {
-      questions.value = JSON.parse(str)
+      const gameObject: { questions: Question[], regionCollections: RegionCollection[] } = JSON.parse(str)
+      regionCollections.value = gameObject.regionCollections
+      questions.value = gameObject.questions
       questions.value.forEach((q) => {
         setQuestionPolygon(q)
       })
@@ -593,15 +623,13 @@ export const useGameStore = defineStore('game', () => {
     questionBeingEdited,
     questionIdBeingEdited,
     timelineShowing,
-    convertQuestionsToString,
-    setQuestionsFromString,
+    exportGameToString,
+    importGameFromString,
     userLocation,
     regionCollections,
   }
 }, {
   persist: {
-    // pick: ['questions', 'userLocation', 'regionCollections'],
     storage: typeof window !== 'undefined' ? localStorage : undefined,
-
   },
 })

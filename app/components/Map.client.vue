@@ -11,7 +11,8 @@ const mapStore = useMapStore()
 const { mapLoaded } = storeToRefs(mapStore)
 
 const style = 'https://tiles.openfreemap.org/styles/liberty'
-const center = [-1.405643, 50.928988] as [number, number]
+// const center = [-1.405643, 50.928988] as [number, number] // southampton
+const center = [4.357612894542058, 50.84054783554592] as [number, number] // brussels
 const zoom = 12
 const mapInstance = useMap()
 defineExpose({ mapInstance })

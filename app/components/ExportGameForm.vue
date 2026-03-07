@@ -9,7 +9,7 @@ const { copy, copied } = useClipboard()
 defineExpose({
   open() {
     opened.value = true
-    text.value = gameStore.convertQuestionsToString()
+    text.value = gameStore.exportGameToString()
   },
 },
 )

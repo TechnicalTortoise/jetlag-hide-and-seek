@@ -8,7 +8,7 @@ const uploadGeoJsonModal = overlay.create(UploadGeoJsonModal)
 
 const UButton = resolveComponent('UButton')
 const gameStore = useGameStore()
-const { regionCollections } = storeToRefs(gameStore)
+const { regionCollections, questions } = storeToRefs(gameStore)
 
 const isOpen = ref(true)
 // table with 4 columns
@@ -67,12 +67,29 @@ const columns: TableColumn<RegionCollection>[] = [
   },
 ]
 
+function areAnyQuestionsUsingRegionCollection(regionCollectionName: string) {
+  for (let i = 0; i < questions.value.length; i += 1) {
+    const q = questions.value[i]
+    if (!q || q.type !== 'GeoJsonRegion') {
+      continue
+    }
+    const gj: GeoJsonRegion = q.question as GeoJsonRegion
+    if (gj.regionCollectionName === regionCollectionName) {
+      return true
+    }
+  }
+  return false
+}
+
 function deleteRegionCollection() {
   const idx = regionCollections.value.findIndex((rc) => {
     return rc.name === deletionName.value
   })
+
   if (idx !== -1) {
-    regionCollections.value.splice(idx, 1)
+    if (!areAnyQuestionsUsingRegionCollection(deletionName.value)) {
+      regionCollections.value.splice(idx, 1)
+    }
   }
   deletionModalOpen.value = false
   deletionName.value = ''

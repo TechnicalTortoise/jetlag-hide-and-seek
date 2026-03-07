@@ -21,7 +21,7 @@ defineExpose({
 )
 
 function onClickAccept() {
-  if (gameStore.setQuestionsFromString(inputValue.value)) {
+  if (gameStore.importGameFromString(inputValue.value)) {
     opened.value = false
   }
   else {
@@ -32,25 +32,14 @@ function onClickAccept() {
 </script>
 
 <template>
-  <UModal
-    v-model:open="opened"
-    title="Import Game"
-  >
+  <UModal v-model:open="opened" title="Import Game">
     <template #body>
-      <UTextarea
-        v-model="inputValue"
-        class="w-full"
-        :rows="10"
-        :ui="invalid ? {
-          base: 'ring-1 ring-error-500 dark:ring-error-400',
-        } : {}"
-      />
+      <UTextarea v-model="inputValue" class="w-full" :rows="10" :ui="invalid ? {
+        base: 'ring-1 ring-error-500 dark:ring-error-400',
+      } : {}" />
     </template>
     <template #footer>
-      <UButton
-        label="Accept"
-        @click="onClickAccept"
-      />
+      <UButton label="Accept" @click="onClickAccept" />
       {{ errorMessage }}
     </template>
   </UModal>
