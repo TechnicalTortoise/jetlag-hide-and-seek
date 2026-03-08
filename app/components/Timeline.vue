@@ -2,6 +2,7 @@
 import {
   useSortable,
 } from '@vueuse/integrations/useSortable'
+import { ICONS } from '~/constants'
 import {
   useGameStore,
 } from '~/stores/GameStore'
@@ -51,6 +52,10 @@ onMounted(async () => {
           >
             <div class="w-2 h-16 bg-gray-500 rounded-xs " />
           </div>
+        </div>
+
+        <div class="w-18 h-16 flex flex-col align-middle justify-center">
+          <NewQuestionMenu />
         </div>
       </div>
     </Transition>

@@ -25,12 +25,6 @@ const items = ref<DropdownMenuItem[][]>([[
     icon: ICONS.customRegion,
     onSelect: () => { state.value = State.ADDING_CUSTOM_REGION },
   },
-  // {
-  //   label: 'Geo Region',
-  //   type: 'link',
-  //   icon: ICONS.geoRegion,
-  //   onSelect: () => { state.value = State.ADDING_PINS },
-  // },
   {
     label: 'Geographic Region',
     type: 'link',
@@ -52,7 +46,7 @@ const items = ref<DropdownMenuItem[][]>([[
     :content="{ side: 'left' }"
   >
     <MapOverlayButton
-      icon-name="material-symbols:add-circle-outline-rounded"
+      :icon-name="ICONS.newQuestion"
       class="pointer-events-auto"
     />
   </UDropdownMenu>

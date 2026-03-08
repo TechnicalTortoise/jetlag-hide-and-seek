@@ -7,6 +7,7 @@ export const ICONS = {
   undefined: 'material-symbols:question-mark-rounded',
   // geoJsonRegion: 'material-symbols:shapes-outline',
   geoJsonRegion: 'i-material-symbols:globe',
+  newQuestion: 'i-material-symbols:add-circle-outline-rounded',
 } as const
 
 export const UNITS = {

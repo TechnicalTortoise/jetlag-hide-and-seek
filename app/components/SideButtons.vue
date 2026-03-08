@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { ICONS } from '~/constants'
+
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 
@@ -21,6 +23,8 @@ function toggleTimeline() {
 
 function onClickCompass() {
   const map = mapStore.getMap()
+  if (!map)
+    return
   if (map.getBearing() === 0) {
     userLocation.moveMapToPosition()
   }
@@ -46,7 +50,13 @@ function onClickCompass() {
         :ui="{}"
         @click="onClickCompass"
       />
-      <NewQuestionMenu />
+
+      <NewQuestionMenu>
+        <MapOverlayButton
+          :icon-name="ICONS.newQuestion"
+          class="pointer-events-auto"
+        />
+      </NewQuestionMenu>
       <MapOverlayButton
         icon-name="material-symbols:measuring-tape-outline"
         class="pointer-events-auto"
