@@ -62,19 +62,30 @@ function setDistanceText() {
   if (!marker0Exists || !marker1Exists) {
     return
   }
-  const lnglat0: [number, number] = mapStore.getMarker(markerId0).getLngLat().toArray()
-  const lnglat1: [number, number] = mapStore.getMarker(markerId1).getLngLat().toArray()
+  const marker0 = mapStore.getMarker(markerId0)
+  const marker1 = mapStore.getMarker(markerId1)
+  if (!marker0 || !marker1) {
+    return
+  }
+  const lnglat0: [number, number] = marker0.getLngLat().toArray()
+  const lnglat1: [number, number] = marker1.getLngLat().toArray()
   const d: number = distance(lnglat0, lnglat1, { units: 'kilometers' })
   text.value = distanceKmToPreferredFormatted(d, gameStore.unitPreference)
-
-  geojson.features[0].geometry.coordinates[0] = lnglat0
-  geojson.features[0].geometry.coordinates[1] = lnglat1
+  if (geojson.features[0]) {
+    geojson.features[0].geometry.coordinates[0] = lnglat0
+    geojson.features[0].geometry.coordinates[1] = lnglat1
+  }
   const map = mapStore.getMap()
-  map.getSource(mapLayerSourceID).setData(geojson)
+  if (map) {
+    map.getSource(mapLayerSourceID).setData(geojson)
+  }
 }
 
 watch(state, () => {
   const map = mapStore.getMap()
+  if (!map) {
+    return
+  }
 
   if (!isActive.value) {
     if (marker0Exists) {
@@ -95,6 +106,9 @@ watch(state, () => {
   else {
     // just enabled
     text.value = 'Select first point'
+    if (!geojson.features[0]) {
+      return
+    }
     geojson.features[0].geometry.coordinates[0] = [0, 0]
     geojson.features[0].geometry.coordinates[1] = [0, 0]
     map.addSource(mapLayerSourceID, {

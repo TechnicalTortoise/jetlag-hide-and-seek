@@ -9,7 +9,7 @@ export function useUserLocation() {
   let positionMarker: Marker | undefined
   const lnglat: Ref<[number, number]> = ref([0, 0])
 
-  const { coords, locatedAt, error, resume, pause } = useGeolocation()
+  const { coords, resume, pause } = useGeolocation()
 
   function getLnglat() {
     return lnglat.value
@@ -33,7 +33,6 @@ export function useUserLocation() {
     if (lnglat.value[0] === 0 && lnglat.value[1] === 0) {
       return
     }
-
     positionMarker = new Marker({ element: el }).setLngLat(lnglat.value).addTo(map).setDraggable(false)
   }
 

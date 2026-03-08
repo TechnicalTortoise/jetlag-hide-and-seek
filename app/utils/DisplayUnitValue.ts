@@ -1,5 +1,5 @@
 const kmToMiles = 0.621371
-const milesToFeet = 5280.0
+// const milesToFeet = 5280.0
 
 export function distanceKmToPreferredFormatted(distanceKm: number, unit: UnitOption): string {
   if (unit === UnitOption.metric) {

@@ -68,13 +68,13 @@ function updateQuestion() {
 }
 
 function onDrag0() {
-  lnglat0 = mapStore.getMarker(markerId0).getLngLat().toArray()
+  lnglat0 = mapStore.getMarker(markerId0)?.getLngLat().toArray()
   updateQuestion()
   setBodyText()
 }
 
 function onDrag1() {
-  lnglat1 = mapStore.getMarker(markerId1).getLngLat().toArray()
+  lnglat1 = mapStore.getMarker(markerId1)?.getLngLat().toArray()
   updateQuestion()
   setBodyText()
 }
@@ -113,7 +113,7 @@ function onStartEditing() {
   if (question.question === undefined) {
     return
   }
-  const t: Thermometer = question.question
+  const t = question.question as Thermometer
   if (t.lnglatStart !== undefined) {
     lnglat0 = t.lnglatStart
     mapStore.addMarker(markerId0, lnglat0, true, onDrag0, getRGB(pinColour0))
