@@ -77,7 +77,7 @@ const columns: TableColumn<CustomPin>[] = [
         'variant': 'ghost',
         'aria-label': 'Actions dropdown',
         'onClick': async () => {
-          const instance = areYouSureModal.open({ bodyText: 'Are you sure you want to delete the marker?' })
+          const instance = areYouSureModal.open({ titleText: 'Are you sure you want to delete the marker?' })
           const yes = await instance.result
           if (yes) {
             gameStore.removeCustomPin(row.getValue('id'))
@@ -90,35 +90,17 @@ const columns: TableColumn<CustomPin>[] = [
 </script>
 
 <template>
-  <UDrawer
-    :open="active"
-    :handle="false"
-    :overlay="false"
-    :modal="false"
-    :dismissible="false"
-    direction="top"
-    :ui="{ container: 'max-w-xl mx-auto' }"
-    title="Adding Pins"
-  >
+  <UDrawer :open="active" :handle="false" :overlay="false" :modal="false" :dismissible="false" direction="top"
+    :ui="{ container: 'max-w-xl mx-auto' }" title="Adding Pins">
     <template #body>
       <div>
         Pins can be dragged
       </div>
-      <UTable
-        :data="customPins"
-        :columns="columns"
-        class="flex-1 max-h-50"
-        :sticky="true"
-      />
+      <UTable :data="customPins" :columns="columns" class="flex-1 max-h-50" :sticky="true" />
     </template>
     <template #footer>
-      <UButton
-        label="Close"
-        color="neutral"
-        variant="outline"
-        class="justify-center"
-        @click="gameStore.state = State.MAIN"
-      />
+      <UButton label="Close" color="neutral" variant="outline" class="justify-center"
+        @click="gameStore.state = State.MAIN" />
     </template>
   </UDrawer>
 </template>

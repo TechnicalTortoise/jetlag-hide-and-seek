@@ -58,7 +58,7 @@ const columns: TableColumn<RegionCollection>[] = [
         'variant': 'ghost',
         'aria-label': 'Actions dropdown',
         'onClick': async () => {
-          const instance = areYouSureModal.open({ bodyText: 'Are you sure you want to delete this region collection?' })
+          const instance = areYouSureModal.open({ titleText: 'Are you sure you want to delete this region collection?' })
           const yes = await instance.result
           if (yes) {
             deleteRegionCollection(row.getValue('name'))

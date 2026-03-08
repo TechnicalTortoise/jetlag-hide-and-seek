@@ -550,13 +550,8 @@ export const useGameStore = defineStore('game', () => {
       }
       onNewQuestionData()
 
-      const lnglats = customPins.value.map((p) => {
-        return p.lnglat
-      })
-      customPins.value = []
-
-      lnglats.forEach((lnglat) => {
-        addCustomPin(lnglat)
+      customPins.value.forEach((p) => {
+        addCustomPinToMap(p)
       })
     }
   })
@@ -624,6 +619,17 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function addCustomPinToMap(pin: CustomPin) {
+    mapStore.addMarker(pin.id, pin.lnglat, true, () => {
+      const mk = mapStore.getMarker(pin.id)
+      if (mk) {
+        pin.lnglat = mk.getLngLat().toArray()
+      }
+    }, pin.colour, () => {
+
+    })
+  }
+
   function addCustomPin(lnglat: [number, number]) {
     const id: string = `CustomPin${Date.now()}`
     // const pinColour: [string, number] = ['accent', 500]
@@ -635,16 +641,9 @@ export const useGameStore = defineStore('game', () => {
     }
     customPins.value.push({ id, lnglat, displayNumber: nextCustomPinNumber.value, colour: pinColour })
     const pin = customPins.value.at(-1)
-    mapStore.addMarker(id, lnglat, true, () => {
-      if (pin) {
-        const mk = mapStore.getMarker(id)
-        if (mk) {
-          pin.lnglat = mk.getLngLat().toArray()
-        }
-      }
-    }, pinColour, () => {
-
-    })
+    if (pin) {
+      addCustomPinToMap(pin)
+    }
     nextCustomPinNumber.value += 1
   }
 

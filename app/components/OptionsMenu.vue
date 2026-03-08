@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { RegionCollectionManagerModal, UploadGeoJsonModal } from '#components'
+import { AreYouSureModal, RegionCollectionManagerModal, UploadGeoJsonModal } from '#components'
 import { ICONS } from '~/constants'
 
 const gameStore = useGameStore()
 
-const newGameModal = useTemplateRef('newGameModal')
 const overlay = useOverlay()
-const uploadGeoJsonModal = overlay.create(RegionCollectionManagerModal)
+const regionCollectionsModal = overlay.create(RegionCollectionManagerModal)
+const areYouSureModal = overlay.create(AreYouSureModal)
 
 const gameFileInput = ref(null)
 const gameFileCurrentlyUploading = ref(false)
@@ -43,7 +43,16 @@ const items = computed(() => [
     label: 'New game',
     type: 'link',
     icon: 'material-symbols:delete-outline-rounded',
-    onSelect: () => { newGameModal.value?.open() },
+    onSelect: async () => {
+      const instance = areYouSureModal.open({
+        titleText: 'Are you sure you want to start a new game?',
+        bodyText: 'This will delete all radars, thermometers, polygons, and pins.',
+      })
+      const yes = await instance.result
+      if (yes) {
+        gameStore.resetGame()
+      }
+    },
   },
   {
     label: 'Export Game',
@@ -63,7 +72,7 @@ const items = computed(() => [
     label: 'Manage Region Collections',
     icon: ICONS.geoJsonRegion,
     onSelect: () => {
-      uploadGeoJsonModal.open()
+      regionCollectionsModal.open()
     },
   },
 ])
@@ -79,7 +88,6 @@ const items = computed(() => [
       class="pointer-events-auto"
     />
   </UDropdownMenu>
-  <NewGameModal ref="newGameModal" />
   <input
     ref="gameFileInput"
     type="file"
