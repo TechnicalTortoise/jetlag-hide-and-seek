@@ -135,8 +135,10 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function drawGameArea() {
-    const p = calculateTotalPolygon()
-    mapStore.drawGamePolygon(p)
+    if (mapLoaded.value) {
+      const p = calculateTotalPolygon()
+      mapStore.drawGamePolygon(p)
+    }
   }
 
   function removeQuestion(id: number) {

@@ -38,6 +38,9 @@ export const useMapStore = defineStore('map', () => {
 
   async function onMapLoaded() {
     const map = getMap()
+    if (!map) {
+      return
+    }
     const img = new Image()
     await new Promise((resolve, reject) => {
       img.onload = resolve
@@ -53,12 +56,14 @@ export const useMapStore = defineStore('map', () => {
 
   function getMap() {
     if (mapInstance.value === undefined) {
+      // return undefined
       throw new Error('map instance was undefined')
     }
     if (mapInstance.value.map === undefined) {
+      return undefined
       // throw new Error('map was undefined')
     }
-    return mapInstance.value?.map
+    return mapInstance.value.map
   }
 
   function setMapInstance(theMapInstance: MapInstance) {
@@ -176,6 +181,9 @@ export const useMapStore = defineStore('map', () => {
 
   function removeGamePolygon() {
     const map = getMap()
+    if (!map) {
+      return
+    }
 
     const fillLayer: StyleLayer | undefined = map.getLayer(fillLayerId)
     if (fillLayer !== undefined) {
@@ -201,6 +209,9 @@ export const useMapStore = defineStore('map', () => {
       return
     }
     const map = getMap()
+    if (!map) {
+      return
+    }
     const source: Source | undefined = map.getSource(sourceId)
     if (source === undefined) {
       map.addSource(sourceId, { type: 'geojson', data: polygon })
@@ -253,7 +264,7 @@ export const useMapStore = defineStore('map', () => {
 
   function addMarker(id: string, lnglat: [number, number], draggable: boolean, dragCallback: () => void | undefined = undefined, color: string = '#52c5ff', clickCallback: () => void | undefined = undefined) {
     const map = getMap()
-    if (map === undefined) {
+    if (!map) {
       return
     }
     const m = new Marker({ draggable, color }).setLngLat(lnglat).addTo(map)
@@ -308,11 +319,17 @@ export const useMapStore = defineStore('map', () => {
 
   function setBearing(bearing: number) {
     const map = getMap()
+    if (!map) {
+      return
+    }
     map.setBearing(bearing)
   }
 
   function resetOrientation() {
     const map = getMap()
+    if (!map) {
+      return
+    }
     map.flyTo({
       bearing: 0,
       pitch: 0,
@@ -321,6 +338,9 @@ export const useMapStore = defineStore('map', () => {
 
   function setPosition(lnglat: [number, number]) {
     const map = getMap()
+    if (!map) {
+      return
+    }
     map.flyTo({
       center: lnglat,
     })
