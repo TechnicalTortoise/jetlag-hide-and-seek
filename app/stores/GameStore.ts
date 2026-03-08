@@ -69,7 +69,9 @@ export interface RegionCollection {
 
 export interface CustomPin {
   id: string
+  displayNumber: number
   lnglat: [number, number]
+  colour: string
 }
 
 export const useGameStore = defineStore('game', () => {
@@ -82,6 +84,7 @@ export const useGameStore = defineStore('game', () => {
   const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
   const regionCollections: Ref<RegionCollection[]> = ref([])
   const customPins: Ref<CustomPin[]> = ref([])
+  const nextCustomPinNumber = ref(1)
 
   const userLocation = useUserLocation()
 
@@ -459,7 +462,7 @@ export const useGameStore = defineStore('game', () => {
     if (q.type !== 'GeoJsonRegion') {
       return
     }
-    const gj: GeoJsonRegion = q.question
+    const gj = q.question as GeoJsonRegion
     // find region collection
     const regionCollection: RegionCollection | undefined = regionCollections.value.find((rc) => {
       return rc.name === gj.regionCollectionName
@@ -510,7 +513,9 @@ export const useGameStore = defineStore('game', () => {
     getTimelineMarkerIndex()
     const marker: Question | undefined = questions.value[timelineMarkerIndex.value]
     questions.value.splice(timelineMarkerIndex.value, 1)
-    questions.value.push(marker)
+    if (marker) {
+      questions.value.push(marker)
+    }
     getTimelineMarkerIndex()
   }
 
@@ -576,6 +581,7 @@ export const useGameStore = defineStore('game', () => {
   function resetGame() {
     mapStore.clearMarkers()
     customPins.value = []
+    nextCustomPinNumber.value = 1
     questions.value.splice(0, questions.value.length)
     addTimelineMarker()
     onNewQuestionData()
@@ -620,17 +626,36 @@ export const useGameStore = defineStore('game', () => {
 
   function addCustomPin(lnglat: [number, number]) {
     const id: string = `CustomPin${Date.now()}`
-    const pinColour: [string, number] = ['accent', 500]
-    customPins.value.push({ id, lnglat })
+    // const pinColour: [string, number] = ['accent', 500]
+    const possibleColours = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#000075', '#808080', '#000000']
+    const colourIndex = (nextCustomPinNumber.value - 1) % possibleColours.length
+    let pinColour = possibleColours[colourIndex]
+    if (!pinColour) {
+      pinColour = '#FFFFFF'
+    }
+    customPins.value.push({ id, lnglat, displayNumber: nextCustomPinNumber.value, colour: pinColour })
     const pin = customPins.value.at(-1)
     mapStore.addMarker(id, lnglat, true, () => {
       if (pin) {
-        pin.lnglat = mapStore.getMarker(id).getLngLat().toArray()
+        const mk = mapStore.getMarker(id)
+        if (mk) {
+          pin.lnglat = mk.getLngLat().toArray()
+        }
       }
-    }, getRGB(pinColour), () => {
-      mapStore.removeMarker(id)
+    }, pinColour, () => {
+
     })
-    console.warn('added marker', customPins.value)
+    nextCustomPinNumber.value += 1
+  }
+
+  function removeCustomPin(id: string) {
+    mapStore.removeMarker(id)
+    const idx = customPins.value.findIndex((p) => {
+      return p.id === id
+    })
+    if (idx !== -1) {
+      customPins.value.splice(idx, 1)
+    }
   }
 
   return {
@@ -661,6 +686,8 @@ export const useGameStore = defineStore('game', () => {
     regionCollections,
     customPins,
     addCustomPin,
+    removeCustomPin,
+    nextCustomPinNumber,
   }
 }, {
   persist: {
