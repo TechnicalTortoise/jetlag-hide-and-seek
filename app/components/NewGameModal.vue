@@ -2,14 +2,9 @@
 import type { InputMenuItem } from '@nuxt/ui'
 
 const gameStore = useGameStore()
-const isOpen = ref(true)
-
-defineExpose({
-  open() {
-    isOpen.value = true
-  },
-},
-)
+const isOpen = computed(() => {
+  return gameStore.state === State.NEW_GAME_MENU
+})
 
 const unitOptions = ref<InputMenuItem[]>([{ label: 'Metric', id: UnitOption.metric }, {
   label: 'Imperial',
@@ -44,11 +39,11 @@ const unitOptions = ref<InputMenuItem[]>([{ label: 'Metric', id: UnitOption.metr
       </div>
     </template>
 
-    <template #footer="{ close }">
+    <template #footer>
       <UButton
         label="New Game"
         class="justify-center w-full"
-        @click="close"
+        @click="gameStore.state = State.MAIN"
       />
     </template>
   </UModal>

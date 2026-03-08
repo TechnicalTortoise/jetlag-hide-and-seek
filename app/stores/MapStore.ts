@@ -56,7 +56,7 @@ export const useMapStore = defineStore('map', () => {
       throw new Error('map instance was undefined')
     }
     if (mapInstance.value.map === undefined) {
-      throw new Error('map was undefined')
+      // throw new Error('map was undefined')
     }
     return mapInstance.value?.map
   }

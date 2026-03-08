@@ -52,6 +52,9 @@ const items = ref<DropdownMenuItem[][]>([
       const yes = await instance.result
       if (yes) {
         gameStore.resetGame()
+        if (gameStore.showNewGameModalAgain) {
+          gameStore.state = State.NEW_GAME_MENU
+        }
       }
     },
   },

@@ -1,16 +1,8 @@
--Add ability to import shapefiles and do region questions
-
-add ability to export polygons
-
--Timeline marker should be I shaped and grey - should like draggable and not a button shape
 -Add + button to the end of the timeline
 
-- new game menu, ask if you want location visible and unit preference. Save this, and can have a "dont show this again". Shown when starting up and there are no timeline items
 
 -Options menu:
     -Show satellite map or street map
-
-- pins are not persistent or cleared on new game
 
 - move utils to utils folder
 

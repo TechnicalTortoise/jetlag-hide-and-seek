@@ -59,6 +59,7 @@ export enum State {
   ADDING_GEOJSON_REGION,
   MODIFYING_GEOJSON_REGION,
   ADDING_PINS,
+  NEW_GAME_MENU,
   NULL,
 }
 
@@ -555,15 +556,17 @@ export const useGameStore = defineStore('game', () => {
       // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
       // questions.value = []
       getTimelineMarkerIndex()
-      // marker only
-      if (questions.value.length === 1) {
-        onNewGame()
-      }
+
       onNewQuestionData()
 
       customPins.value.forEach((p) => {
         addCustomPinToMap(p)
       })
+
+      // marker only
+      if (questions.value.length === 1 && customPins.value.length === 0 && showNewGameModalAgain.value) {
+        state.value = State.NEW_GAME_MENU
+      }
     }
   })
 
@@ -591,10 +594,6 @@ export const useGameStore = defineStore('game', () => {
     questions.value.splice(0, questions.value.length)
     addTimelineMarker()
     onNewQuestionData()
-  }
-
-  async function onNewGame() {
-
   }
 
   function exportGameToString() {
