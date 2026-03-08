@@ -56,7 +56,7 @@ function setBodyText() {
       return
     }
     const d: number = distance(lnglat0, lnglat1, { units: 'kilometers' })
-    bodyText.value = `Distance between markers: ${d.toFixed(2)} km`
+    bodyText.value = `Distance between markers: ${distanceKmToPreferredFormatted(d, gameStore.unitPreference)}`
   }
 }
 

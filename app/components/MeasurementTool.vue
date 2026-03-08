@@ -65,12 +65,7 @@ function setDistanceText() {
   const lnglat0: [number, number] = mapStore.getMarker(markerId0).getLngLat().toArray()
   const lnglat1: [number, number] = mapStore.getMarker(markerId1).getLngLat().toArray()
   const d: number = distance(lnglat0, lnglat1, { units: 'kilometers' })
-  if (d < 1) {
-    text.value = `${(d * 1000).toFixed(0)} m`
-  }
-  else {
-    text.value = `${d.toFixed(3)} km`
-  }
+  text.value = distanceKmToPreferredFormatted(d, gameStore.unitPreference)
 
   geojson.features[0].geometry.coordinates[0] = lnglat0
   geojson.features[0].geometry.coordinates[1] = lnglat1

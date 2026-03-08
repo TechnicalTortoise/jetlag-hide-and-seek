@@ -214,10 +214,13 @@ export const useGameStore = defineStore('game', () => {
     if (q.type !== 'Radar') {
       return
     }
-    const r: Radar = q.question
+    const r = q.question as Radar
+    if (!r.lnglat || !r.radiusKm) {
+      return
+    }
     const p: GeoJsonProperties = turf.circle(r.lnglat, r.radiusKm, { steps: 64, units: 'kilometers' })
     q.polygon = r.hit ? p : mapStore.invertGeometry(p)
-    q.timelineText = `${r.radiusKm.toFixed(2)}km`
+    q.timelineText = distanceKmToPreferredFormatted(r.radiusKm, unitPreference.value)
   }
 
   function addThermometer(): Question {
@@ -266,7 +269,7 @@ export const useGameStore = defineStore('game', () => {
       return
     }
     const d: number = turf.distance(t.lnglatStart, t.lnglatEnd, 'kilometers')
-    q.timelineText = `${d.toFixed(2)}km`
+    q.timelineText = distanceKmToPreferredFormatted(d, unitPreference.value)
     q.polygon = createThermometerPolygon(t.lnglatStart, t.lnglatEnd, t.warmer)
   }
 
@@ -368,7 +371,7 @@ export const useGameStore = defineStore('game', () => {
       areaKm2 = turf.area(p) * 1e-6
     }
 
-    q.timelineText = `${areaKm2.toFixed(2)}km²`
+    q.timelineText = areaKm2ToPrefferedFormatted(areaKm2, unitPreference.value)
   }
 
   function addGameBoundary(): Question {
@@ -664,6 +667,14 @@ export const useGameStore = defineStore('game', () => {
       customPins.value.splice(idx, 1)
     }
   }
+
+  watch(unitPreference, () => {
+    if (mapLoaded.value) {
+      questions.value.forEach((q) => {
+        setQuestionPolygon(q)
+      })
+    }
+  })
 
   return {
     questions,

@@ -9,8 +9,12 @@ const pinColour: [string, number] = ['tertiary', 500]
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 const { questionBeingEdited } = storeToRefs(gameStore)
+const radiusUserUnits = ref(0)
 
-const radiusKm = ref(0)
+const radiusKm = computed(() => {
+  return distancePreferredUnitToKm(radiusUserUnits.value, gameStore.unitPreference)
+})
+
 const hit = ref(true)
 let lnglat: [number, number] | undefined
 
@@ -31,7 +35,7 @@ function resetFn() {
     mapStore.removeMarker(markerId)
     markerExists = false
   }
-  radiusKm.value = 1 // just to show that something is happening
+  radiusUserUnits.value = 1
   hit.value = true
 }
 
@@ -48,8 +52,10 @@ function onMarkerDrag() {
   if (!active.value || questionBeingEdited.value === undefined) {
     return
   }
-  lnglat = mapStore.getMarker(markerId).getLngLat().toArray()
-  gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
+  lnglat = mapStore.getMarker(markerId)?.getLngLat().toArray()
+  if (lnglat) {
+    gameStore.updateRadar(questionBeingEdited.value, radiusKm.value, lnglat, hit.value)
+  }
   setBodyText()
 }
 
@@ -84,13 +90,13 @@ function onStartEditing() {
     return
   }
 
-  const r: Radar = question.question
+  const r = question.question as Radar
   lnglat = r.lnglat
   if (r.hit !== undefined) {
     hit.value = r.hit
   }
   if (r.radiusKm !== undefined) {
-    radiusKm.value = r.radiusKm
+    radiusUserUnits.value = distanceKmToPreferredUnit(r.radiusKm, gameStore.unitPreference)
   }
   if (lnglat !== undefined) {
     mapStore.addMarker(markerId, lnglat, true, onMarkerDrag)
@@ -129,13 +135,12 @@ function updateRadar() {
       <div>
         {{ positionString }}
       </div>
-      <UFormField label="Radius">
+      <UFormField :label="`Radius (${unitToLongString(gameStore.unitPreference)})`">
         <UInputNumber
-          v-model="radiusKm"
+          v-model="radiusUserUnits"
           :format-options="{
             minimumFractionDigits: 1,
-            style: 'unit',
-            unit: 'kilometer',
+
           }"
           :step-snapping="false"
           :increment="true"
