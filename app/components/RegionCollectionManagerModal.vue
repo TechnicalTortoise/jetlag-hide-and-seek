@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import type { TableColumn } from '@nuxt/ui'
 import type { FeatureCollection } from 'geojson'
-import { UploadGeoJsonModal } from '#components'
+import { AreYouSureModal, UploadGeoJsonModal } from '#components'
 
 const overlay = useOverlay()
 const uploadGeoJsonModal = overlay.create(UploadGeoJsonModal)
+const areYouSureModal = overlay.create(AreYouSureModal)
 
 const UButton = resolveComponent('UButton')
 const gameStore = useGameStore()
@@ -13,8 +14,6 @@ const { regionCollections, questions } = storeToRefs(gameStore)
 const isOpen = ref(true)
 // table with 4 columns
 // name( renamable ) | region number | region names list | bin button (bnuuuuuuuu)
-const deletionModalOpen = ref(false)
-const deletionName = ref('')
 
 const columns: TableColumn<RegionCollection>[] = [
   {
@@ -58,9 +57,12 @@ const columns: TableColumn<RegionCollection>[] = [
         'color': 'error',
         'variant': 'ghost',
         'aria-label': 'Actions dropdown',
-        'onClick': () => {
-          deletionName.value = row.getValue('name')
-          deletionModalOpen.value = true
+        'onClick': async () => {
+          const instance = areYouSureModal.open({ bodyText: 'Are you sure you want to delete this region collection?' })
+          const yes = await instance.result
+          if (yes) {
+            deleteRegionCollection(row.getValue('name'))
+          }
         },
       })
     },
@@ -81,18 +83,16 @@ function areAnyQuestionsUsingRegionCollection(regionCollectionName: string) {
   return false
 }
 
-function deleteRegionCollection() {
+function deleteRegionCollection(name: string) {
   const idx = regionCollections.value.findIndex((rc) => {
-    return rc.name === deletionName.value
+    return rc.name === name
   })
 
   if (idx !== -1) {
-    if (!areAnyQuestionsUsingRegionCollection(deletionName.value)) {
+    if (!areAnyQuestionsUsingRegionCollection(name)) {
       regionCollections.value.splice(idx, 1)
     }
   }
-  deletionModalOpen.value = false
-  deletionName.value = ''
 }
 </script>
 
@@ -112,25 +112,6 @@ function deleteRegionCollection() {
         label="Add region collection"
         @click="uploadGeoJsonModal.open()"
       />
-      <UModal
-        v-model:open="deletionModalOpen"
-        :title="`Are you sure you want to delete ${deletionName}?`"
-        :ui="{ footer: 'justify-end' }"
-      >
-        <template #footer="{ close }">
-          <UButton
-            label="Cancel"
-            color="neutral"
-            variant="outline"
-            @click="close"
-          />
-          <UButton
-            label="Delete"
-            color="neutral"
-            @click="deleteRegionCollection"
-          />
-        </template>
-      </UModal>
     </template>
   </UModal>
 </template>
