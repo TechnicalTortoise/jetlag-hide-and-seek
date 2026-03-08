@@ -1,10 +1,8 @@
 import type { FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from 'geojson'
-import type { ShallowRef } from 'vue'
 import * as turf from '@turf/turf'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
-import { getRGB } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
 
 const pinia = createPinia()
@@ -12,8 +10,8 @@ pinia.use(piniaPluginPersistedstate)
 
 // type guards
 export interface Question {
-  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion' | 'GameBoundary' | 'GeoJsonRegion'
-  question: Radar | undefined | Thermometer | CustomRegion | GameBoundary | GeoJsonRegion
+  type: 'Radar' | 'TimelineMarker' | 'Thermometer' | 'CustomRegion' | 'GeoJsonRegion'
+  question: Radar | undefined | Thermometer | CustomRegion | GeoJsonRegion
   allInfoAvailable: boolean
   timelineText: string
   id: number
@@ -35,10 +33,6 @@ export interface Thermometer {
 export interface CustomRegion {
   points: [number, number][]
   inside: boolean
-}
-
-export interface GameBoundary {
-  name: string
 }
 
 export interface GeoJsonRegion {
@@ -115,21 +109,6 @@ export const useGameStore = defineStore('game', () => {
   }
 
   function calculateTotalPolygon(): GeoJsonProperties | undefined {
-    const fullWorld: GeoJsonProperties = {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [-180, -90],
-            [180, -90],
-            [180, 90],
-            [-180, 90],
-            [-180, -90],
-          ],
-        ],
-      },
-    }
     let polygon: GeoJsonProperties | undefined
     for (let i = 0; i < questions.value.length; i += 1) {
       const q = questions.value[i]
@@ -193,7 +172,7 @@ export const useGameStore = defineStore('game', () => {
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
-    return questions.value.at(-2)
+    return questions.value.at(-2) as Question
   }
 
   function updateRadar(q: Question, radiusKm: number, lnglat: [number, number], hit: boolean) {
@@ -242,7 +221,7 @@ export const useGameStore = defineStore('game', () => {
 
     moveTimelineMarkerToEnd()
     onNewQuestionData()
-    return questions.value.at(-2)
+    return questions.value.at(-2) as Question
   }
 
   function updateThermometer(q: Question, lnglatStart: [number, number], lnglatEnd: [number, number], warmer: boolean) {
@@ -265,11 +244,11 @@ export const useGameStore = defineStore('game', () => {
     if (q.type !== 'Thermometer') {
       return
     }
-    const t: Thermometer = q.question
+    const t = q.question as Thermometer
     if (t === undefined || t.lnglatStart === undefined || t.lnglatEnd === undefined || t.warmer === undefined) {
       return
     }
-    const d: number = turf.distance(t.lnglatStart, t.lnglatEnd, 'kilometers')
+    const d: number = turf.distance(t.lnglatStart, t.lnglatEnd, { units: 'kilometers' })
     q.timelineText = distanceKmToPreferredFormatted(d, unitPreference.value)
     q.polygon = createThermometerPolygon(t.lnglatStart, t.lnglatEnd, t.warmer)
   }
@@ -293,6 +272,7 @@ export const useGameStore = defineStore('game', () => {
     const cutter = turf.buffer(line, 0.1, { units: 'meters' })
     const circleToSplit = turf.circle(midPoint, maxDist / 2.2, { units: 'kilometers', steps: 640 })
     const polygons: MultiPolygon = turf.difference(turf.featureCollection([circleToSplit, cutter]))
+
     const geometry = polygons.geometry.coordinates
     if (geometry.length !== 2) {
       console.warn('Expect 2 polygons!')
@@ -331,7 +311,7 @@ export const useGameStore = defineStore('game', () => {
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
-    return questions.value.at(-2)
+    return questions.value.at(-2) as Question
   }
 
   function updateCustomRegion(q: Question, points: [number, number][], inside: boolean) {
@@ -362,7 +342,9 @@ export const useGameStore = defineStore('game', () => {
     cr.points.forEach((p) => {
       points.push(p)
     })
-    points.push(cr.points[0])
+    if (cr.points[0]) {
+      points.push(cr.points[0])
+    }
     const p: GeoJsonProperties = turf.polygon([points])
     q.polygon = cr.inside ? p : mapStore.invertGeometry(p)
 
@@ -373,65 +355,6 @@ export const useGameStore = defineStore('game', () => {
     }
 
     q.timelineText = areaKm2ToPrefferedFormatted(areaKm2, unitPreference.value)
-  }
-
-  function addGameBoundary(): Question {
-    const gb: GameBoundary = {
-      name: '',
-    }
-    const q: Question = {
-      type: 'GameBoundary',
-      id: generateQuestionId(),
-      question: gb,
-      polygon: undefined,
-      timelineText: 'Game Boundary',
-      allInfoAvailable: false,
-    }
-    questions.value.push(q)
-    moveTimelineMarkerToEnd()
-    onNewQuestionData()
-    // returning q does not work properly, but this does
-    return questions.value.at(-2)
-  }
-
-  function updateGameBoundary(q: Question, name: string, poly: GeoJsonProperties) {
-    if (q.type !== 'GameBoundary') {
-      return
-    }
-    const gb: GameBoundary = {
-      name,
-    }
-
-    q.polygon = poly
-    q.allInfoAvailable = true
-    q.question = gb
-    if (poly.geometry.type === 'Polygon') {
-      q.polygon = poly
-    }
-    else if (poly.geometry.type === 'MultiPolygon') {
-      let biggestPolygon: GeoJsonProperties | undefined
-      let biggestArea: number = 0
-      for (let i = 0; i < poly.geometry.coordinates.length; i += 1) {
-        const subP = turf.polygon(poly.geometry.coordinates[i])
-        const area = turf.area(subP)
-        if (area > biggestArea) {
-          biggestArea = area
-          biggestPolygon = subP
-        }
-      }
-      q.polygon = biggestPolygon
-    }
-    q.timelineText = `${gb.name}`
-
-    if (q.polygon) {
-      const centre = turf.center(q.polygon).geometry.coordinates
-      if (centre) {
-        const map = mapStore.getMap()
-        map.setCenter(centre)
-      }
-    }
-
-    onNewQuestionData()
   }
 
   function addGeoJsonRegion(): Question {
@@ -452,7 +375,7 @@ export const useGameStore = defineStore('game', () => {
     moveTimelineMarkerToEnd()
     onNewQuestionData()
     // returning q does not work properly, but this does
-    return questions.value.at(-2)
+    return questions.value.at(-2) as Question
   }
 
   function updateGeoJsonRegion(q: Question, name: string, regionCollectionName: string, hit: boolean) {
@@ -545,18 +468,7 @@ export const useGameStore = defineStore('game', () => {
 
   watch(mapLoaded, () => {
     if (mapLoaded.value) {
-      // const q0 = addRadar()
-      // updateRadar(q0, gameArea.radiusKm, gameArea.center, true)
-      // const q1 = addRadar()
-      // updateRadar(q1, 4, [-1.4432936229776763, 50.93119754191312], true)
-      // const q2 = addThermometer()
-      // updateThermometer(q2, [-1.4183861695849982, 50.933852348338064], [-1.3992685687023434, 50.93780435744535], true)
-
-      // when the map loads (will always be slower than loading local questions storage)
-      // try and get the timeline marker index. If there isn't one (first time being run so questions is empty), then add one
-      // questions.value = []
       getTimelineMarkerIndex()
-
       onNewQuestionData()
 
       customPins.value.forEach((p) => {
@@ -700,8 +612,6 @@ export const useGameStore = defineStore('game', () => {
     updateThermometer,
     addCustomRegion,
     updateCustomRegion,
-    addGameBoundary,
-    updateGameBoundary,
     addGeoJsonRegion,
     updateGeoJsonRegion,
     updateQuestion: setQuestionPolygon,
