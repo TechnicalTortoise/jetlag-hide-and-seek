@@ -2,8 +2,9 @@ import type { FeatureCollection, GeoJsonProperties, MultiPolygon, Polygon } from
 import type { ShallowRef } from 'vue'
 import * as turf from '@turf/turf'
 import { createPinia } from 'pinia'
-
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+
+import { getRGB } from '~/colourUtils'
 import { useMapStore } from '~/stores/MapStore'
 
 const pinia = createPinia()
@@ -66,6 +67,11 @@ export interface RegionCollection {
   featureCollection: FeatureCollection
 }
 
+export interface CustomPin {
+  id: string
+  lnglat: [number, number]
+}
+
 export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
@@ -74,7 +80,8 @@ export const useGameStore = defineStore('game', () => {
   const timelineShowing = ref(true)
   const questionIdBeingEdited = ref(-1)
   const questionBeingEdited: Ref<Question | undefined> = ref(undefined)
-  const regionCollections: Ref<RegionCollections[]> = ref([])
+  const regionCollections: Ref<RegionCollection[]> = ref([])
+  const customPins: Ref<CustomPin[]> = ref([])
 
   const userLocation = useUserLocation()
 
@@ -537,6 +544,15 @@ export const useGameStore = defineStore('game', () => {
         onNewGame()
       }
       onNewQuestionData()
+
+      const lnglats = customPins.value.map((p) => {
+        return p.lnglat
+      })
+      customPins.value = []
+
+      lnglats.forEach((lnglat) => {
+        addCustomPin(lnglat)
+      })
     }
   })
 
@@ -559,6 +575,7 @@ export const useGameStore = defineStore('game', () => {
 
   function resetGame() {
     mapStore.clearMarkers()
+    customPins.value = []
     questions.value.splice(0, questions.value.length)
     addTimelineMarker()
     onNewQuestionData()
@@ -601,6 +618,21 @@ export const useGameStore = defineStore('game', () => {
     }
   }
 
+  function addCustomPin(lnglat: [number, number]) {
+    const id: string = `CustomPin${Date.now()}`
+    const pinColour: [string, number] = ['accent', 500]
+    customPins.value.push({ id, lnglat })
+    const pin = customPins.value.at(-1)
+    mapStore.addMarker(id, lnglat, true, () => {
+      if (pin) {
+        pin.lnglat = mapStore.getMarker(id).getLngLat().toArray()
+      }
+    }, getRGB(pinColour), () => {
+      mapStore.removeMarker(id)
+    })
+    console.warn('added marker', customPins.value)
+  }
+
   return {
     questions,
     resetGame,
@@ -627,6 +659,8 @@ export const useGameStore = defineStore('game', () => {
     importGameFromString,
     userLocation,
     regionCollections,
+    customPins,
+    addCustomPin,
   }
 }, {
   persist: {

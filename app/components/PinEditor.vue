@@ -1,26 +1,15 @@
 <script lang="ts" setup>
 import type { MapMouseEvent } from 'maplibre-gl'
-import appConfig from '~/app.config'
-import { getRGB } from '~/colourUtils'
-
 import { useMapStore } from '~/stores/MapStore'
 
 const gameStore = useGameStore()
 const mapStore = useMapStore()
 
-let pinCount: number = 0
-const pinColour: [string, number] = ['accent', 500]
-
 const active = computed(() => {
   return gameStore.state === State.ADDING_PINS
 })
 
-function onMarkerDrag() {
-
-}
-
 watch(mapStore, () => {
-  // console.warn(getRGB(pinColour))
   if (mapStore.mapLoaded) {
     const map = mapStore.getMap()
     map.on('click', onMapClick)
@@ -31,13 +20,7 @@ function onMapClick(e: MapMouseEvent) {
   if (!active.value) {
     return
   }
-
-  const id = `CustomPin${pinCount}`
-
-  mapStore.addMarker(id, e.lngLat.toArray(), true, onMarkerDrag, getRGB(pinColour), () => {
-    mapStore.removeMarker(id)
-  })
-  pinCount += 1
+  gameStore.addCustomPin(e.lngLat.toArray())
 }
 </script>
 

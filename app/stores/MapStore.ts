@@ -8,7 +8,7 @@ import { defineStore } from 'pinia'
 export const useMapStore = defineStore('map', () => {
   const mapInstance = ref<MapInstance | undefined>(undefined)
   const mapLoaded = ref<boolean>(false)
-  let markers: { [id: string]: Marker } = {}
+  let markers: { id: string, marker: Marker }[] = []
   const sourceId = 'GamePolygonSource'
   const fillLayerId = 'GamePolygonLayerFill'
   const outlineLayerId = 'GamePolygonLayerOutline'
@@ -271,23 +271,39 @@ export const useMapStore = defineStore('map', () => {
       })
     }
 
-    markers[id] = m
+    markers.push({ id, marker: m })
   }
 
   function moveMarker(id: string, lnglat: [number, number]) {
-    markers[id]?.setLngLat(lnglat)
+    const m = getMarker(id)
+    m?.setLngLat(lnglat)
   }
 
   function removeMarker(id: string) {
-    markers[id]?.remove()
+    const idx = getMarkerIndex(id)
+    if (idx !== -1) {
+      markers[idx]?.marker.remove()
+      markers.splice(idx, 1)
+    }
   }
 
-  function getMarker(id: string): Marker {
-    return markers[id]
+  function getMarker(id: string): Marker | undefined {
+    return markers.find((mk) => {
+      return id === mk.id
+    })?.marker
+  }
+
+  function getMarkerIndex(id: string): number {
+    return markers.findIndex((mk) => {
+      return id === mk.id
+    })
   }
 
   function clearMarkers() {
-    markers = {}
+    markers.forEach((mk) => {
+      mk.marker.remove()
+    })
+    markers = []
   }
 
   function setBearing(bearing: number) {
