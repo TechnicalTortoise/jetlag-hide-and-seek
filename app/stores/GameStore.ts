@@ -607,6 +607,7 @@ export const useGameStore = defineStore('game', () => {
     const gameObject = {
       questions: questionsCopy,
       regionCollections: regionCollections.value,
+      customPins: customPins.value,
     }
     const json = JSON.stringify(gameObject)
     return json
@@ -614,11 +615,16 @@ export const useGameStore = defineStore('game', () => {
 
   function importGameFromString(str: string): boolean {
     try {
-      const gameObject: { questions: Question[], regionCollections: RegionCollection[] } = JSON.parse(str)
+      const gameObject: { questions: Question[], regionCollections: RegionCollection[], customPins: CustomPin[] } = JSON.parse(str)
+      resetGame()
       regionCollections.value = gameObject.regionCollections
       questions.value = gameObject.questions
       questions.value.forEach((q) => {
         setQuestionPolygon(q)
+      })
+      customPins.value = gameObject.customPins
+      customPins.value.forEach((p) => {
+        addCustomPinToMap(p)
       })
       addTimelineMarker()
       onNewQuestionData()
@@ -645,6 +651,15 @@ export const useGameStore = defineStore('game', () => {
     const id: string = `CustomPin${Date.now()}`
     // const pinColour: [string, number] = ['accent', 500]
     const possibleColours = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#000075', '#808080', '#000000']
+    while (true) { // when loading a game, it doesn't save nextCustomPinNumber
+      const p = customPins.value.find((p) => {
+        return p.displayNumber === nextCustomPinNumber.value
+      })
+      if (!p) {
+        break
+      }
+      nextCustomPinNumber.value += 1
+    }
     const colourIndex = (nextCustomPinNumber.value - 1) % possibleColours.length
     let pinColour = possibleColours[colourIndex]
     if (!pinColour) {
