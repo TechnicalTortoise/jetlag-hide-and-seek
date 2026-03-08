@@ -74,6 +74,11 @@ export interface CustomPin {
   colour: string
 }
 
+export enum UnitOption {
+  metric,
+  imperial,
+}
+
 export const useGameStore = defineStore('game', () => {
   const questions: Ref<Question[]> = ref([])
   const mapStore = useMapStore()
@@ -85,8 +90,11 @@ export const useGameStore = defineStore('game', () => {
   const regionCollections: Ref<RegionCollection[]> = ref([])
   const customPins: Ref<CustomPin[]> = ref([])
   const nextCustomPinNumber = ref(1)
+  const unitPreference: Ref<UnitOption> = ref(UnitOption.metric)
+  const showNewGameModalAgain = ref(true)
 
   const userLocation = useUserLocation()
+  const usingLocation = userLocation.enabled
 
   function generateQuestionId(): number {
     return Date.now()
@@ -687,6 +695,9 @@ export const useGameStore = defineStore('game', () => {
     addCustomPin,
     removeCustomPin,
     nextCustomPinNumber,
+    unitPreference,
+    showNewGameModalAgain,
+    usingLocation,
   }
 }, {
   persist: {

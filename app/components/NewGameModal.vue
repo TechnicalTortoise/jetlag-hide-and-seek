@@ -1,6 +1,8 @@
 <script lang="ts" setup>
+import type { InputMenuItem } from '@nuxt/ui'
+
 const gameStore = useGameStore()
-const isOpen = ref(false)
+const isOpen = ref(true)
 
 defineExpose({
   open() {
@@ -8,30 +10,45 @@ defineExpose({
   },
 },
 )
+
+const unitOptions = ref<InputMenuItem[]>([{ label: 'Metric', id: UnitOption.metric }, {
+  label: 'Imperial',
+  id: UnitOption.imperial,
+}])
 </script>
 
 <template>
   <UModal
     v-model:open="isOpen"
-    title="New Game"
+    title="New Game Options"
+    :dismissible="false"
+    :close="false"
   >
     <template #body>
-      Are you sure you want to start a new game?
-      This will delete all radars, thermometers, polygons, and pins.
+      <div class="flex flex-col gap-4">
+        <USwitch
+          v-model="gameStore.usingLocation"
+          label="Show your location"
+        />
+        <UFormField label="Unit preference">
+          <UInputMenu
+            v-model="gameStore.unitPreference"
+            :items="unitOptions"
+            value-key="id"
+          />
+        </UFormField>
+        <USwitch
+          v-model="gameStore.showNewGameModalAgain"
+          label="Show this menu again"
+        />
+      </div>
     </template>
 
     <template #footer="{ close }">
       <UButton
-        label="Cancel"
-        color="neutral"
-        variant="outline"
-        class="justify-center w-full"
-        @click="close"
-      />
-      <UButton
         label="New Game"
         class="justify-center w-full"
-        @click="close(); gameStore.resetGame()"
+        @click="close"
       />
     </template>
   </UModal>

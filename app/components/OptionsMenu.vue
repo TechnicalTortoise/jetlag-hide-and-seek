@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { DropdownMenuItem } from '@nuxt/ui'
 import { AreYouSureModal, RegionCollectionManagerModal, UploadGeoJsonModal } from '#components'
 import { ICONS } from '~/constants'
 
@@ -28,7 +29,7 @@ async function onGameFileUpload(event) {
   gameFileCurrentlyUploading.value = false
 }
 
-const items = computed(() => [
+const items = ref<DropdownMenuItem[][]>([
   {
     label: 'Show location',
     icon: 'i-material-symbols:location-searching-rounded',
@@ -73,6 +74,36 @@ const items = computed(() => [
     icon: ICONS.geoJsonRegion,
     onSelect: () => {
       regionCollectionsModal.open()
+    },
+  },
+  {
+    icon: 'material-symbols:measuring-tape-outline-rounded',
+    label: 'Unit Preference',
+
+    children:
+      [
+        {
+          type: 'checkbox',
+          label: 'Metric',
+          checked: computed(() => { return gameStore.unitPreference === UnitOption.metric }),
+          onSelect(e: Event) {
+            e.preventDefault()
+            gameStore.unitPreference = UnitOption.metric
+          },
+        },
+        {
+          label: 'Imperial',
+          type: 'checkbox',
+          checked: computed(() => { return gameStore.unitPreference === UnitOption.imperial }),
+          onSelect(e: Event) {
+            e.preventDefault()
+            gameStore.unitPreference = UnitOption.imperial
+          },
+        },
+      ],
+
+    onSelect: () => {
+
     },
   },
 ])

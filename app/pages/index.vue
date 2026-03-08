@@ -21,5 +21,6 @@ const map = useTemplateRef('map')
     <CustomRegionEditor />
     <GeoJsonEditor />
     <SideButtons />
+    <NewGameModal />
   </div>
 </template>
