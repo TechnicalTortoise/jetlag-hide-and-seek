@@ -5,6 +5,7 @@ import { useMapStore } from '~/stores/MapStore'
 export function useUserLocation() {
   const enabled = ref(false)
   const mapStore = useMapStore()
+  const { mapLoaded } = storeToRefs(mapStore)
 
   let positionMarker: Marker | undefined
   const lnglat: Ref<[number, number]> = ref([0, 0])
@@ -16,6 +17,9 @@ export function useUserLocation() {
   }
 
   function createMarker() {
+    if (!mapLoaded.value) {
+      return
+    }
     const el = document.createElement('div')
     el.className = 'custom-marker'
     el.style.width = '20px'
