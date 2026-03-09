@@ -91,6 +91,9 @@ export const useGameStore = defineStore('game', () => {
   const userLocation = useUserLocation()
   const usingLocation = userLocation.enabled
 
+  const mapCentre: Ref<[number, number]> = ref([0, 0])
+  const mapZoom = ref(0)
+
   function generateQuestionId(): number {
     return Date.now()
   }
@@ -131,6 +134,7 @@ export const useGameStore = defineStore('game', () => {
         polygon = turf.union(turf.featureCollection([polygon, mapStore.invertGeometry(q.polygon)]))
       }
     }
+
     return polygon
   }
 
@@ -280,7 +284,6 @@ export const useGameStore = defineStore('game', () => {
       console.warn('Expect 2 polygons!')
       return undefined
     }
-
     const polygon0 = turf.polygon(geometry[0])
     const polygon1 = turf.polygon(geometry[1])
     const centroid0 = turf.centroid(polygon0)
@@ -486,6 +489,18 @@ export const useGameStore = defineStore('game', () => {
         questionBeingEdited.value = undefined
         questionIdBeingEdited.value = -1
       }
+
+      const map = mapStore.getMap()
+      if (map) {
+        map.on('zoomend', () => {
+          mapZoom.value = map.getZoom()
+          console.warn(mapZoom.value)
+        })
+        map.on('moveend', () => {
+          mapCentre.value = map.getCenter().toArray()
+          console.warn(mapCentre.value)
+        })
+      }
     }
   })
 
@@ -494,7 +509,6 @@ export const useGameStore = defineStore('game', () => {
       return question.type === 'TimelineMarker'
     })
     if (timelineMarkerIndex.value === -1) {
-      console.warn('Adding timeline marker')
       addTimelineMarker()
     }
   }
@@ -640,6 +654,8 @@ export const useGameStore = defineStore('game', () => {
     unitPreference,
     showNewGameModalAgain,
     usingLocation,
+    mapCentre,
+    mapZoom,
   }
 }, {
   persist: {

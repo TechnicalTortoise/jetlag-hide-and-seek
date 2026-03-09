@@ -69,6 +69,9 @@ export function useUserLocation() {
   })
 
   function moveMapToPosition() {
+    if (!enabled) {
+      return
+    }
     if (lnglat.value[0] === 0 && lnglat.value[1] === 0) {
       return
     }

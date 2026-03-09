@@ -60,8 +60,8 @@ export const useMapStore = defineStore('map', () => {
       throw new Error('map instance was undefined')
     }
     if (mapInstance.value.map === undefined) {
-      return undefined
-      // throw new Error('map was undefined')
+      // return undefined
+      throw new Error('map was undefined')
     }
     return mapInstance.value.map
   }
@@ -142,42 +142,6 @@ export const useMapStore = defineStore('map', () => {
     // Fallback — return as-is for unsupported geometry types
     return feature
   }
-  // function invertGeometry(feature: GeoJsonProperties) {
-  //   const coords = feature.geometry.coordinates
-
-  //   // Check if already inverted (first ring is the world boundary)
-  //   const firstRing = coords[0]
-  //   const isWorldBoundary
-  //     = firstRing.length === 5
-  //       && firstRing[0][0] === -180 && firstRing[0][1] === -90
-  //       && firstRing[1][0] === 180 && firstRing[1][1] === -90
-  //       && firstRing[2][0] === 180 && firstRing[2][1] === 90
-  //       && firstRing[3][0] === -180 && firstRing[3][1] === 90
-
-  //   if (isWorldBoundary && coords.length > 1) {
-  //     // Already inverted - extract the original polygon (second ring)
-  //     return {
-  //       type: 'Feature',
-  //       geometry: {
-  //         type: 'Polygon',
-  //         coordinates: [coords[1]], // Return the hole as the main polygon
-  //       },
-  //     }
-  //   }
-  //   else {
-  //     // Not inverted - wrap with world boundary
-  //     return {
-  //       type: 'Feature',
-  //       geometry: {
-  //         type: 'Polygon',
-  //         coordinates: [
-  //           [[-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]],
-  //           coords[0],
-  //         ],
-  //       },
-  //     }
-  //   }
-  // }
 
   function removeGamePolygon() {
     const map = getMap()
