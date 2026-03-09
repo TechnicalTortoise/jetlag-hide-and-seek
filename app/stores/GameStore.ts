@@ -494,11 +494,9 @@ export const useGameStore = defineStore('game', () => {
       if (map) {
         map.on('zoomend', () => {
           mapZoom.value = map.getZoom()
-          console.warn(mapZoom.value)
         })
         map.on('moveend', () => {
           mapCentre.value = map.getCenter().toArray()
-          console.warn(mapCentre.value)
         })
       }
     }
