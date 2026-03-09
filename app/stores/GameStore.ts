@@ -481,6 +481,11 @@ export const useGameStore = defineStore('game', () => {
       if (questions.value.length === 1 && customPins.value.length === 0 && showNewGameModalAgain.value) {
         state.value = State.NEW_GAME_MENU
       }
+      else {
+        state.value = State.MAIN
+        questionBeingEdited.value = undefined
+        questionIdBeingEdited.value = -1
+      }
     }
   })
 
