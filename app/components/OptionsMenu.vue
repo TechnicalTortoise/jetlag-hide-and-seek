@@ -34,11 +34,15 @@ const items = ref<DropdownMenuItem[][]>([
     label: 'Show location',
     icon: 'i-material-symbols:location-searching-rounded',
     type: 'checkbox' as const,
-    checked: gameStore.userLocation.enabled,
+    checked: computed(() => {
+      return gameStore.userLocation.enabled
+    }),
     color: 'secondary',
-    onUpdateChecked(checked: boolean) {
-      gameStore.userLocation.enabled = checked
+    onSelect: (e: Event) => {
+      e.preventDefault()
+      gameStore.userLocation.enabled = !gameStore.userLocation.enabled
     },
+
   },
   {
     label: 'New game',
