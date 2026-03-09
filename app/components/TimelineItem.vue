@@ -77,6 +77,7 @@ function onClick() {
       :icon="iconName"
       :color="gameStore.questionIdBeingEdited === props.id ? 'secondary' : 'primary'"
       @click="onClick"
+      @touchstart="onClick"
     >
       <div class="flex items-center justify-center w-16 h-8 text-xs leading-none">
         {{ props.text }}
