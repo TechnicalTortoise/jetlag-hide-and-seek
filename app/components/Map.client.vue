@@ -1,10 +1,11 @@
 <script lang="ts" setup>
+import type { AttributionControlOptions } from 'maplibre-gl'
 import {
   MglMap,
   MglNavigationControl,
   useMap,
 } from '@indoorequal/vue-maplibre-gl'
-import { Marker } from 'maplibre-gl'
+import { AttributionControl, Marker } from 'maplibre-gl'
 import { useMapStore } from '~/stores/MapStore'
 
 const mapStore = useMapStore()
@@ -36,6 +37,7 @@ function onMapLoaded() {
   mapStore.onMapLoaded()
   mapLoaded.value = true
   // mapInstance.map?.setProjection({ type: 'globe' })
+  mapInstance.map?.addControl(new AttributionControl(), 'top-left')
 }
 </script>
 
