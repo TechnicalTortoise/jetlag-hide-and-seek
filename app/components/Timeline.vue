@@ -44,7 +44,6 @@ onMounted(async () => {
             :id="question.id"
             :text="question.timelineText"
             :type="question.type"
-            class="handle"
           />
           <div
             v-else

@@ -42,7 +42,6 @@ function onClickCompass() {
         transform: gameStore.timelineShowing ? 'translateY(-80px)' : 'translateY(0)',
       }"
     >
-      <OptionsMenu />
       <MapOverlayButton
         icon-name="material-symbols:expand-circle-up-outline-rounded"
         :icon-angle="-mapBearing"
@@ -64,6 +63,9 @@ function onClickCompass() {
           toggleMeasuring()
         "
       />
+
+      <OptionsMenu />
+
       <MapOverlayButton
         icon-name="material-symbols:view-timeline-outline-rounded"
         class="pointer-events-auto"
