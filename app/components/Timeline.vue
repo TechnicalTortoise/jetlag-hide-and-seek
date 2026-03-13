@@ -48,12 +48,12 @@ onMounted(async () => {
           />
           <div
             v-else
-            class="w-4 h-16 handle flex flex-col items-center"
+            class="w-6 h-16 handle flex flex-col items-center"
           >
             <div class="w-2 h-16 bg-gray-500 rounded-xs " />
           </div>
         </div>
-
+        <div class="w-1" />
         <div class="w-18 h-16 flex flex-col align-middle justify-center">
           <NewQuestionMenu />
         </div>
